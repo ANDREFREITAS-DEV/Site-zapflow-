@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sal e Doce - Cardápio Online</title>
+    
+    <!-- Bibliotecas Externas -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            red: '#DC2626',
+                            dark: '#18181B',
+                            light: '#F4F4F5'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            -webkit-tap-highlight-color: transparent;
+            padding-bottom: 120px;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .input-field {
+            width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px;
+            font-size: 16px; outline: none; transition: border-color 0.2s; background-color: #fff;
+        }
+        .input-field:focus { border-color: #DC2626; box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.1); }
+
+        .cat-btn { transition: all 0.3s ease; }
+        .cat-btn.active { background-color: #DC2626; color: white; box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.3); border: 1px solid #DC2626; }
+        .cat-btn.inactive { background-color: #ffffff; color: #4b5563; border: 1px solid #e5e7eb; }
+
+        /* Estilo para botão de tipo de entrega */
+        .type-btn { transition: all 0.2s; border: 1px solid #e5e7eb; }
+        .type-btn.selected { background-color: #DC2626; color: white; border-color: #DC2626; }
+        .type-btn.unselected { background-color: white; color: #374151; }
+
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-animate { animation: slideUp 0.3s ease-out forwards; }
+    </style>
+</head>
+<body>
+
+    <!-- HERO SECTION -->
+    <div class="bg-brand-red p-4 pb-6 rounded-b-[2rem] shadow-sm relative z-10">
+        <div class="flex flex-col items-center text-center">
+            
+            <!-- LOGO -->
+            <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg mb-2 overflow-hidden border-4 border-yellow-400">
+                <img src="imagens/logo.png" alt="Logo Sal e Doce" class="w-full h-full object-cover">
+            </div>
+
+            <h1 class="text-2xl font-bold text-white">Sal e Doce</h1>
+            <p class="text-white/90 text-sm font-medium">Rostisseria & Marmitaria</p>
+            
+            <div class="flex items-center gap-2 mt-3 bg-black/20 px-4 py-1.5 rounded-full backdrop-blur-sm">
+                <div id="status-indicator" class="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                <span id="status-text" class="text-xs font-bold text-white uppercase">Fechado</span>
+                <span class="text-xs text-white/80 border-l border-white/30 pl-2 ml-1">10:00 às 14:00</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MENU DE CATEGORIAS -->
+    <nav class="sticky top-0 z-40 bg-[#f3f4f6] pt-2 pb-2 shadow-sm">
+        <div class="flex justify-center gap-3 px-2">
+            <button onclick="filterMenu('marmitex')" id="btn-marmitex" class="cat-btn active flex-1 py-3 rounded-xl text-sm font-bold text-center max-w-[120px]">
+                <div class="flex flex-col items-center leading-none gap-1"><i class="fas fa-drumstick-bite text-base"></i><span>Marmitex</span></div>
+            </button>
+            <button onclick="filterMenu('bebidas')" id="btn-bebidas" class="cat-btn inactive flex-1 py-3 rounded-xl text-sm font-bold text-center max-w-[120px]">
+                <div class="flex flex-col items-center leading-none gap-1"><i class="fas fa-wine-bottle text-base"></i><span>Bebidas</span></div>
+            </button>
+            <button onclick="filterMenu('sobremesas')" id="btn-sobremesas" class="cat-btn inactive flex-1 py-3 rounded-xl text-sm font-bold text-center max-w-[120px]">
+                <div class="flex flex-col items-center leading-none gap-1"><i class="fas fa-ice-cream text-base"></i><span>Sobremesa</span></div>
+            </button>
+        </div>
+    </nav>
+
+    <!-- PRODUTOS -->
+    <main class="max-w-4xl mx-auto p-4 pt-2">
+        <div id="menu-container" class="grid grid-cols-1 gap-4 pb-4"></div>
+    </main>
+
+    <!-- CARRINHO FLUTUANTE -->
+    <div id="cart-float" onclick="openCart()" class="fixed bottom-6 left-4 right-4 bg-brand-red text-white p-4 rounded-xl shadow-2xl flex justify-between items-center cursor-pointer transform translate-y-24 transition-transform duration-300 z-50 hover:bg-red-700">
+        <div class="flex flex-col">
+            <span class="text-xs text-white/80 font-medium">Meu Pedido</span>
+            <div class="flex items-center gap-2">
+                <div class="bg-white/20 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm" id="cart-count">0</div>
+                <span class="font-bold text-lg" id="cart-total-float">R$ 0,00</span>
+            </div>
+        </div>
+        <div class="flex items-center font-bold text-sm gap-2">Ver carrinho <i class="fas fa-chevron-right"></i></div>
+    </div>
+
+    <!-- MODAL CHECKOUT -->
+    <div id="checkout-modal" class="fixed inset-0 bg-black/60 hidden z-50 overflow-y-auto">
+        <div class="min-h-screen px-4 py-6 flex items-end sm:items-center justify-center">
+            <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl modal-animate overflow-hidden relative">
+                
+                <div class="bg-brand-red p-4 flex justify-between items-center text-white sticky top-0 z-10">
+                    <h2 class="text-lg font-bold">Finalizar Pedido</h2>
+                    <button onclick="closeCart()" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition"><i class="fas fa-times"></i></button>
+                </div>
+
+                <div class="p-5 overflow-y-auto max-h-[80vh]">
+                    
+                    <!-- NOVO: Seletor de Tipo de Entrega -->
+                    <div class="flex gap-3 mb-6">
+                        <button type="button" id="btn-delivery" onclick="setDeliveryType('delivery')" class="type-btn selected flex-1 py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2">
+                            <i class="fas fa-motorcycle"></i> Entrega
+                        </button>
+                        <button type="button" id="btn-pickup" onclick="setDeliveryType('pickup')" class="type-btn unselected flex-1 py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2">
+                            <i class="fas fa-shopping-bag"></i> Retirada
+                        </button>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="font-bold text-gray-800 mb-3 border-b pb-2">Seus Itens</h3>
+                        <div id="cart-items-list" class="space-y-3"></div>
+                    </div>
+
+                    <form id="checkout-form" class="space-y-4">
+                        <div><label class="block text-sm font-semibold text-gray-700 mb-1">Nome completo *</label><input type="text" id="client-name" placeholder="Seu nome completo" class="input-field" required></div>
+                        <div><label class="block text-sm font-semibold text-gray-700 mb-1">Telefone / WhatsApp *</label><input type="tel" id="client-phone" placeholder="(18) 99999-9999" class="input-field" maxlength="15" required></div>
+                        
+                        <!-- Campos de Endereço (Serão ocultados na retirada) -->
+                        <div class="pt-2" id="address-container">
+                            <h4 class="font-bold text-gray-800 mb-2">Endereço de Entrega</h4>
+                            <div class="grid grid-cols-1 gap-3">
+                                <div><label class="block text-xs font-semibold text-gray-500 mb-1">Endereço completo *</label><input type="text" id="address-street" placeholder="Rua e Número" class="input-field"></div>
+                                <div><label class="block text-xs font-semibold text-gray-500 mb-1">Bairro *</label><input type="text" id="address-district" placeholder="Seu bairro" class="input-field"></div>
+                                <div><label class="block text-xs font-semibold text-gray-500 mb-1">Complemento</label><input type="text" id="address-comp" placeholder="Apto, Bloco, etc." class="input-field"></div>
+                            </div>
+                        </div>
+
+                        <!-- Aviso de Retirada (Escondido inicialmente) -->
+                        <div id="pickup-msg" class="hidden bg-green-50 text-green-800 p-3 rounded-lg text-sm border border-green-200">
+                            <i class="fas fa-store mr-1"></i> Você escolheu <b>retirar na loja</b>.
+                        </div>
+
+                        <div class="pt-2">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Forma de pagamento *</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50"><input type="radio" name="payment" value="Dinheiro" class="w-5 h-5 text-brand-red focus:ring-brand-red" onchange="toggleChange(true)"><span class="ml-3 flex items-center gap-2"><i class="fas fa-money-bill-wave text-green-600"></i> Dinheiro</span></label>
+                                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50"><input type="radio" name="payment" value="Cartão" class="w-5 h-5 text-brand-red focus:ring-brand-red" checked onchange="toggleChange(false)"><span class="ml-3 flex items-center gap-2"><i class="fas fa-credit-card text-blue-600"></i> Cartão (Levar maquininha)</span></label>
+                                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50"><input type="radio" name="payment" value="PIX" class="w-5 h-5 text-brand-red focus:ring-brand-red" onchange="toggleChange(false)"><span class="ml-3 flex items-center gap-2"><i class="fa-brands fa-pix text-teal-600"></i> PIX</span></label>
+                            </div>
+                            <div id="change-box" class="mt-3 hidden bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Troco para quanto?</label><input type="text" id="client-change" placeholder="Ex: R$ 50,00" class="input-field">
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-100 p-4 rounded-lg mt-6 space-y-2">
+                            <div class="flex justify-between text-sm"><span>Subtotal</span><span id="summary-subtotal">R$ 0,00</span></div>
+                            <div class="flex justify-between text-sm"><span>Taxa de entrega</span><span id="delivery-fee-display" class="text-gray-800 font-bold">R$ 5,00</span></div>
+                            <div class="flex justify-between text-lg font-bold border-t border-gray-300 pt-2 mt-2"><span>Total</span><span id="summary-total" class="text-brand-red">R$ 0,00</span></div>
+                        </div>
+
+                        <button type="button" onclick="finalizeOrder()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 transition-transform transform active:scale-95 mt-4">
+                            <i class="fab fa-whatsapp text-xl"></i> Enviar Pedido via WhatsApp
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script>
+        // DADOS
+        const menuItems = [
+            // Marmitex
+            { id: 100, name: "Marmitex P (Tradicional)", desc: "Arroz, feijão, macarrão, salada e 1 carne.", price: 18.00, cat: "marmitex", img: "imagens/marmitex_p.jpg" },
+            { id: 101, name: "Marmitex M (Tradicional)", desc: "Arroz, feijão, macarrão, salada e 2 carnes.", price: 22.00, cat: "marmitex", img: "imagens/marmitex_m.jpg" },
+            { id: 102, name: "Marmitex G (Executiva)", desc: "Feijão tropeiro, bife acebolado, fritas, arroz.", price: 28.00, cat: "marmitex", img: "imagens/marmitex_g.jpg" },
+            // Sucos
+            { id: 200, name: "Suco de Laranja 500ml", desc: "100% fruta, feito na hora.", price: 10.00, cat: "bebidas", img: "imagens/suco_laranja.jpg" },
+            { id: 201, name: "Suco de Abacaxi c/ Hortelã", desc: "Refrescante, 500ml.", price: 12.00, cat: "bebidas", img: "imagens/suco_abacaxi.jpg" },
+            // Latas
+            { id: 301, name: "Coca-Cola Original", desc: "Lata 350ml", price: 5.00, cat: "bebidas", img: "imagens/coca_lata.png" },
+            { id: 302, name: "Coca-Cola Zero", desc: "Lata 350ml", price: 5.00, cat: "bebidas", img: "imagens/coca_zero_lata.png" },
+            { id: 303, name: "Fanta Laranja", desc: "Lata 350ml", price: 5.00, cat: "bebidas", img: "imagens/fanta_laranja.png" },
+            { id: 304, name: "Fanta Uva", desc: "Lata 350ml", price: 5.00, cat: "bebidas", img: "imagens/fanta_uva.png" },
+            { id: 305, name: "Fanta Maracujá", desc: "Lata 350ml", price: 5.00, cat: "bebidas", img: "imagens/fanta_maracuja.png" },
+            { id: 306, name: "Sprite Original", desc: "Lata 350ml", price: 5.00, cat: "bebidas", img: "imagens/sprite.png" },
+            { id: 307, name: "Sprite Zero", desc: "Lata 350ml", price: 5.00, cat: "bebidas", img: "imagens/sprite_zero.png" },
+            { id: 308, name: "Schweppes Tônica", desc: "Lata 350ml", price: 5.00, cat: "bebidas", img: "imagens/schweppes_tonica.png" },
+            { id: 309, name: "Schweppes Citrus", desc: "Lata 350ml", price: 5.00, cat: "bebidas", img: "imagens/schweppes_citrus.png" },
+            // Garrafas
+            { id: 401, name: "Coca-Cola Original", desc: "Pet 600ml", price: 7.00, cat: "bebidas", img: "imagens/coca_600.png" },
+            { id: 402, name: "Coca-Cola Zero", desc: "Pet 600ml", price: 7.00, cat: "bebidas", img: "imagens/coca_zero_600.png" },
+            { id: 501, name: "Coca-Cola Original", desc: "Pet 1 Litro", price: 8.50, cat: "bebidas", img: "imagens/coca_1l.png" },
+            { id: 601, name: "Coca-Cola Original", desc: "Pet 2 Litros", price: 12.00, cat: "bebidas", img: "imagens/coca_2l.png" },
+            { id: 701, name: "Água Crystal Sem Gás", desc: "500ml", price: 5.00, cat: "bebidas", img: "imagens/agua_sem_gas.png" },
+            { id: 702, name: "Água Crystal Com Gás", desc: "500ml", price: 5.00, cat: "bebidas", img: "imagens/agua_com_gas.png" },
+            // Sobremesas
+            { id: 801, name: "Pudim de Leite", desc: "Fatia caseira cremosa.", price: 8.00, cat: "sobremesas", img: "imagens/pudim.jpg" },
+            { id: 802, name: "Mousse de Maracujá", desc: "No pote, bem gelado.", price: 9.00, cat: "sobremesas", img: "imagens/mousse.jpg" }
+        ];
+
+        let cart = {}; 
+        const PHONE_NUMBER = "5518991442857";
+        const FIXED_DELIVERY_FEE = 5.00; // Taxa de entrega normal
+        let currentDeliveryMode = 'delivery'; // 'delivery' ou 'pickup'
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderMenu('marmitex');
+            checkHorario();
+            setupPhoneMask();
+        });
+
+        // Toggle Entrega vs Retirada
+        window.setDeliveryType = function(type) {
+            currentDeliveryMode = type;
+            
+            const btnDelivery = document.getElementById('btn-delivery');
+            const btnPickup = document.getElementById('btn-pickup');
+            const addrContainer = document.getElementById('address-container');
+            const pickupMsg = document.getElementById('pickup-msg');
+            const feeDisplay = document.getElementById('delivery-fee-display');
+
+            if (type === 'delivery') {
+                btnDelivery.classList.remove('unselected');
+                btnDelivery.classList.add('selected');
+                btnPickup.classList.remove('selected');
+                btnPickup.classList.add('unselected');
+                
+                addrContainer.classList.remove('hidden');
+                pickupMsg.classList.add('hidden');
+                feeDisplay.innerHTML = `R$ ${FIXED_DELIVERY_FEE.toFixed(2)}`;
+                feeDisplay.classList.remove('text-green-600');
+            } else {
+                btnPickup.classList.remove('unselected');
+                btnPickup.classList.add('selected');
+                btnDelivery.classList.remove('selected');
+                btnDelivery.classList.add('unselected');
+                
+                addrContainer.classList.add('hidden');
+                pickupMsg.classList.remove('hidden');
+                feeDisplay.innerHTML = `Grátis`;
+                feeDisplay.classList.add('text-green-600');
+            }
+            updateTotal();
+        }
+
+        // Atualizar Totais no Modal
+        function updateTotal() {
+            let subtotal = 0;
+            Object.keys(cart).forEach(id => {
+                const item = menuItems.find(i => i.id == id);
+                subtotal += item.price * cart[id];
+            });
+
+            const fee = currentDeliveryMode === 'delivery' ? FIXED_DELIVERY_FEE : 0;
+            const total = subtotal + fee;
+
+            document.getElementById('summary-subtotal').innerText = `R$ ${subtotal.toFixed(2)}`;
+            document.getElementById('summary-total').innerText = `R$ ${total.toFixed(2)}`;
+        }
+
+        function checkHorario() {
+            const now = new Date();
+            const hour = now.getHours();
+            const isOpen = hour >= 10 && hour < 14;
+            const indicator = document.getElementById('status-indicator');
+            const text = document.getElementById('status-text');
+
+            if(isOpen) {
+                indicator.className = "w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse";
+                text.innerText = "Aberto Agora";
+                text.className = "text-xs font-bold text-white uppercase";
+            } else {
+                indicator.className = "w-2.5 h-2.5 rounded-full bg-red-600";
+                text.innerText = "Fechado Agora";
+                text.className = "text-xs font-bold text-red-200 uppercase";
+            }
+        }
+
+        function renderMenu(category) {
+            const container = document.getElementById('menu-container');
+            container.innerHTML = "";
+            ['marmitex', 'bebidas', 'sobremesas'].forEach(cat => {
+                const btn = document.getElementById(`btn-${cat}`);
+                if(cat === category) { btn.classList.remove('inactive'); btn.classList.add('active'); } 
+                else { btn.classList.remove('active'); btn.classList.add('inactive'); }
+            });
+
+            const filtered = menuItems.filter(i => i.cat === category);
+            if(filtered.length === 0) { container.innerHTML = `<div class="text-center py-10 text-gray-500">Nenhum item nesta categoria.</div>`; return; }
+
+            filtered.forEach(item => {
+                const qty = cart[item.id] || 0;
+                const card = document.createElement('div');
+                card.className = "bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex gap-3 items-center";
+                card.innerHTML = `
+                    <div class="w-24 h-24 bg-gray-200 rounded-lg flex-shrink-0 overflow-hidden">
+                        <img src="${item.img}" alt="${item.name}" class="w-full h-full object-cover" onerror="this.style.display='none'">
+                    </div>
+                    <div class="flex-1 flex flex-col justify-between h-24 py-1">
+                        <div>
+                            <h3 class="font-bold text-gray-800 leading-tight text-sm">${item.name}</h3>
+                            <p class="text-xs text-gray-500 line-clamp-1 mt-0.5">${item.desc}</p>
+                        </div>
+                        <div class="flex justify-between items-end mt-1">
+                            <span class="font-bold text-gray-900">R$ ${item.price.toFixed(2)}</span>
+                            <div class="flex items-center gap-3 bg-gray-50 rounded-lg p-1 border border-gray-200" id="controls-${item.id}">
+                                ${getControlHTML(item.id, qty)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function getControlHTML(id, qty) {
+            if (qty === 0) return `<button onclick="updateQty(${id}, 1)" class="px-3 py-1 text-sm font-bold text-gray-600 hover:text-brand-red transition">Adicionar</button>`;
+            return `<button onclick="updateQty(${id}, -1)" class="w-7 h-7 flex items-center justify-center bg-white border border-gray-200 rounded text-red-500 hover:bg-red-50"><i class="fas fa-minus text-xs"></i></button><span class="font-bold text-sm w-4 text-center">${qty}</span><button onclick="updateQty(${id}, 1)" class="w-7 h-7 flex items-center justify-center bg-brand-red border border-red-600 rounded text-white hover:bg-red-700"><i class="fas fa-plus text-xs"></i></button>`;
+        }
+
+        window.filterMenu = function(cat) { renderMenu(cat); window.scrollTo({top: 0, behavior: 'smooth'}); }
+
+        window.updateQty = function(id, change) {
+            if (!cart[id]) cart[id] = 0;
+            cart[id] += change;
+            if (cart[id] <= 0) delete cart[id];
+            const controlDiv = document.getElementById(`controls-${id}`);
+            if (controlDiv) controlDiv.innerHTML = getControlHTML(id, cart[id] || 0);
+            updateFloatingCart();
+        }
+
+        function updateFloatingCart() {
+            const totalQty = Object.values(cart).reduce((a, b) => a + b, 0);
+            const subtotal = Object.keys(cart).reduce((sum, id) => {
+                const item = menuItems.find(i => i.id == id);
+                return sum + (item.price * cart[id]);
+            }, 0);
+            
+            const floatBar = document.getElementById('cart-float');
+            document.getElementById('cart-count').innerText = totalQty;
+            // No float, mostramos apenas o subtotal dos produtos
+            document.getElementById('cart-total-float').innerText = `R$ ${subtotal.toFixed(2)}`;
+            
+            if (totalQty > 0) floatBar.classList.remove('translate-y-24');
+            else floatBar.classList.add('translate-y-24');
+        }
+
+        window.openCart = function() {
+            const modal = document.getElementById('checkout-modal');
+            const list = document.getElementById('cart-items-list');
+            list.innerHTML = "";
+            let subtotal = 0;
+            
+            Object.keys(cart).forEach(id => {
+                const item = menuItems.find(i => i.id == id);
+                const qty = cart[id];
+                const itemTotal = item.price * qty;
+                subtotal += itemTotal;
+                list.innerHTML += `
+                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-gray-200 w-10 h-10 rounded-md overflow-hidden flex-shrink-0"><img src="${item.img}" class="w-full h-full object-cover" onerror="this.style.display='none'"></div>
+                            <div><p class="text-sm font-bold text-gray-800">${item.name}</p><p class="text-xs text-gray-500">${qty}x R$ ${item.price.toFixed(2)}</p></div>
+                        </div>
+                        <div class="text-right"><p class="font-bold text-gray-800">R$ ${itemTotal.toFixed(2)}</p><button onclick="updateQty(${item.id}, -1); openCart();" class="text-xs text-red-500 font-medium underline mt-1">Remover</button></div>
+                    </div>
+                `;
+            });
+
+            if(Object.keys(cart).length === 0) { closeCart(); return; }
+            
+            updateTotal(); // Atualiza os valores com a taxa correta
+            modal.classList.remove('hidden');
+        }
+
+        window.closeCart = function() { document.getElementById('checkout-modal').classList.add('hidden'); }
+        window.toggleChange = function(show) { const box = document.getElementById('change-box'); if(show) box.classList.remove('hidden'); else { box.classList.add('hidden'); document.getElementById('client-change').value = ''; } }
+
+        function setupPhoneMask() {
+            const phoneInput = document.getElementById('client-phone');
+            phoneInput.addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 11) value = value.slice(0, 11);
+                if (value.length > 2) value = `(${value.substring(0,2)}) ${value.substring(2)}`;
+                if (value.length > 9) value = `${value.substring(0,10)}-${value.substring(10)}`;
+                e.target.value = value;
+            });
+        }
+
+        window.finalizeOrder = function() {
+            const name = document.getElementById('client-name').value;
+            const phone = document.getElementById('client-phone').value;
+            const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+            const change = document.getElementById('client-change').value;
+            
+            // Validações
+            if (!name || !phone) {
+                Toastify({ text: "Nome e Telefone são obrigatórios!", duration: 3000, style: { background: "#DC2626" }, position: "center" }).showToast();
+                return;
+            }
+
+            // Se for entrega, valida endereço
+            let addressString = "RETIRADA NO BALCÃO";
+            if (currentDeliveryMode === 'delivery') {
+                const street = document.getElementById('address-street').value;
+                const district = document.getElementById('address-district').value;
+                const comp = document.getElementById('address-comp').value;
+                
+                if(!street || !district) {
+                    Toastify({ text: "Para entrega, preencha o endereço completo!", duration: 3000, style: { background: "#DC2626" }, position: "center" }).showToast();
+                    return;
+                }
+                addressString = `${street}, ${district} ${comp ? '- ' + comp : ''}`;
+            }
+
+            let itemsString = "";
+            let subtotal = 0;
+            Object.keys(cart).forEach(id => {
+                const item = menuItems.find(i => i.id == id);
+                const qty = cart[id];
+                itemsString += `• ${qty}x ${item.name} (R$ ${(item.price * qty).toFixed(2)})%0A`;
+                subtotal += item.price * qty;
+            });
+
+            const fee = currentDeliveryMode === 'delivery' ? FIXED_DELIVERY_FEE : 0;
+            const finalTotal = subtotal + fee;
+            
+            let paymentInfo = paymentMethod;
+            if(paymentMethod === "Dinheiro" && change) paymentInfo += ` (Troco para: ${change})`;
+
+            const msg = `*NOVO PEDIDO - SAL E DOCE*%0A%0A*👤 Cliente:* ${name}%0A*📞 Telefone:* ${phone}%0A%0A*🛒 ITENS DO PEDIDO:*%0A${itemsString}%0A*Subtotal: R$ ${subtotal.toFixed(2)}*%0A*🛵 Entrega/Retirada: R$ ${fee.toFixed(2)} (${currentDeliveryMode === 'delivery' ? 'Entrega' : 'Retirada'})*%0A*💰 TOTAL GERAL: R$ ${finalTotal.toFixed(2)}*%0A%0A*📍 ${currentDeliveryMode === 'delivery' ? 'ENDEREÇO DE ENTREGA' : 'MODO DE ENTREGA'}:*%0A${addressString}%0A%0A*💳 FORMA DE PAGAMENTO:*%0A${paymentInfo}`;
+            
+            window.open(`https://wa.me/${PHONE_NUMBER}?text=${msg}`, '_blank');
+        }
+    </script>
+</body>
+</html>
