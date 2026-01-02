@@ -15,22 +15,26 @@
     <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
         <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
             <h2 class="text-2xl font-bold text-gray-800 text-center mb-2">Área do Cliente</h2>
-            <p class="text-gray-500 text-center mb-6 text-sm">Gerencie seu estabelecimento</p>
+            <p class="text-gray-500 text-center mb-6 text-sm">Entre com os dados criados no Supabase</p>
             
             <input type="email" id="email" placeholder="Seu E-mail" class="w-full p-3 mb-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
             <input type="password" id="password" placeholder="Sua Senha" class="w-full p-3 mb-6 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
             
-            <button onclick="handleLogin()" class="w-full bg-orange-600 text-white font-bold py-3 rounded-lg hover:bg-orange-700 transition">Entrar</button>
-            <p class="mt-4 text-center text-xs text-gray-400">Primeiro acesso? Entre em contato com o suporte.</p>
+            <button onclick="handleLogin()" id="btn-login" class="w-full bg-orange-600 text-white font-bold py-3 rounded-lg hover:bg-orange-700 transition">Entrar</button>
+            <p class="mt-4 text-center text-xs text-gray-400">Problemas? Verifique seu usuário no painel do Supabase.</p>
         </div>
     </div>
 
     <div id="setup-screen" class="hidden min-h-screen flex items-center justify-center p-4">
         <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md text-center">
             <i class="fas fa-store text-6xl text-orange-200 mb-4"></i>
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">Loja Nova Detectada!</h2>
-            <p class="text-gray-600 mb-6">Nenhuma loja configurada para o endereço <span id="setup-slug" class="font-mono bg-gray-100 px-2 py-1 rounded">...</span>. Deseja criar agora?</p>
-            <input type="text" id="new-store-name" placeholder="Nome do Estabelecimento" class="w-full p-3 mb-4 border rounded-lg">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Bem-vindo(a)!</h2>
+            <p class="text-gray-600 mb-6">Você ainda não tem uma loja configurada. Vamos criar agora?</p>
+            
+            <input type="text" id="new-store-name" placeholder="Nome do Estabelecimento (Ex: Gás Fiel)" class="w-full p-3 mb-3 border rounded-lg">
+            <input type="text" id="new-store-slug" placeholder="Link da loja (Ex: gas-fiel)" class="w-full p-3 mb-4 border rounded-lg bg-gray-50">
+            <p class="text-xs text-left text-gray-400 mb-4">*Isso definirá seu link: usezapflow.com.br/gas-fiel</p>
+
             <button onclick="createStore()" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition">Criar Loja e Começar</button>
         </div>
     </div>
@@ -51,13 +55,11 @@
         </header>
 
         <main class="max-w-5xl mx-auto p-4">
-            
             <div id="content-menu" class="space-y-6">
                 <div class="flex justify-between items-end mb-4">
                     <h2 class="text-lg font-bold text-gray-700">Categorias</h2>
                     <button onclick="openModal('modal-cat')" class="text-xs bg-gray-900 text-white px-3 py-2 rounded-lg hover:bg-black transition"><i class="fas fa-plus"></i> Nova Aba</button>
                 </div>
-
                 <div id="categories-list" class="space-y-4">
                     <p class="text-center text-gray-400 py-10">Carregando cardápio...</p>
                 </div>
@@ -65,7 +67,6 @@
 
             <div id="content-config" class="hidden space-y-6 max-w-lg mx-auto bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                 <h3 class="font-bold text-gray-800 border-b pb-2 mb-4">Dados da Loja</h3>
-                
                 <div>
                     <label class="block text-xs font-bold text-gray-500 mb-1">Nome Fantasia</label>
                     <input type="text" id="cfg-name" class="w-full p-2 border rounded bg-gray-50">
@@ -91,7 +92,6 @@
                         <input type="text" id="cfg-color" class="w-full p-2 border rounded bg-gray-50">
                     </div>
                 </div>
-
                 <button onclick="saveSettings()" class="w-full bg-orange-600 text-white font-bold py-3 rounded-lg mt-4">Salvar Alterações</button>
             </div>
         </main>
@@ -113,22 +113,18 @@
             <h3 class="font-bold text-lg mb-4">Gerenciar Produto</h3>
             <input type="hidden" id="prod-id">
             <input type="hidden" id="prod-cat-id">
-
             <div class="mb-4 text-center">
                 <div class="w-32 h-32 bg-gray-100 mx-auto rounded-lg flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-300 relative group">
                     <img id="preview-img" class="w-full h-full object-cover hidden">
                     <div id="upload-placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
-                        <i class="fas fa-camera text-2xl"></i>
-                        <span class="text-xs mt-1">Clique para alterar</span>
+                        <i class="fas fa-camera text-2xl"></i><span class="text-xs mt-1">Clique para alterar</span>
                     </div>
                     <input type="file" id="prod-img" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="handleImagePreview(this)">
                 </div>
                 <p class="text-xs text-gray-400 mt-2">Max 2MB (JPG/PNG)</p>
             </div>
-
             <input type="text" id="prod-name" placeholder="Nome do Produto" class="w-full p-3 border rounded-lg mb-3">
             <textarea id="prod-desc" placeholder="Descrição curta" class="w-full p-3 border rounded-lg mb-3 h-20 resize-none"></textarea>
-            
             <div class="flex gap-3 mb-4">
                 <div class="w-1/2">
                     <label class="text-xs font-bold text-gray-500">Preço (R$)</label>
@@ -139,36 +135,26 @@
                     <input type="checkbox" id="prod-active" checked class="w-5 h-5 text-orange-600 rounded">
                 </div>
             </div>
-
             <div class="flex gap-2">
                 <button onclick="closeModal('modal-prod')" class="flex-1 py-3 text-gray-500 font-bold bg-gray-100 rounded-lg">Cancelar</button>
                 <button onclick="saveProduct()" id="btn-save-prod" class="flex-1 py-3 bg-green-600 text-white font-bold rounded-lg">Salvar</button>
             </div>
-            
             <button onclick="deleteProduct()" id="btn-delete-prod" class="w-full mt-3 py-2 text-red-500 text-sm font-bold hidden">Excluir Produto</button>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURAÇÃO INICIAL (COLE SUAS CHAVES AQUI) ---
-        const SUPABASE_URL = 'https://axfyfeexmdkcmhgtqelc.supabase.co';
+        // --- SUAS CHAVES DO SUPABASE (JÁ INSERIDAS) ---
+        const SUPABASE_URL = 'https://axfyfeexmdkcmhgtqelc.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_gQPdtNGsVQWq6YUgz0Wgqw_GLrxVgxM'; 
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        
+        const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         let CURRENT_STORE = null;
         let CURRENT_CATEGORIES = [];
-        // Pega o slug da URL (ex: zapflow.com.br/gas/admin -> slug = 'gas')
-        // Se estiver na raiz, use um padrão ou erro. Assumindo subpasta:
-        let URL_SLUG = window.location.pathname.split('/')[1] || 'default'; 
-        if(window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1')) {
-             // Para testes locais, pode forçar um slug
-             // URL_SLUG = 'gas'; 
-        }
 
-        // --- SISTEMA DE LOGIN ---
+        // --- LOGIN ---
         async function checkSession() {
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await sbClient.auth.getSession();
             if (session) {
                 document.getElementById('login-screen').classList.add('hidden');
                 loadStoreData(session.user.id);
@@ -180,41 +166,40 @@
         async function handleLogin() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const btn = document.getElementById('btn-login');
+
+            if(!email || !password) return alert("Preencha email e senha.");
+
+            btn.innerText = "Entrando...";
+            btn.disabled = true;
             
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
+            
             if (error) {
-                alert('Erro ao entrar: ' + error.message);
+                alert('Erro ao entrar: ' + error.message + '\nVerifique se criou o usuário no Supabase.');
+                btn.innerText = "Entrar";
+                btn.disabled = false;
             } else {
                 checkSession();
             }
         }
 
         async function logout() {
-            await supabase.auth.signOut();
+            await sbClient.auth.signOut();
             window.location.reload();
         }
 
-        // --- CARREGAMENTO DE DADOS ---
+        // --- CARREGAR LOJA ---
         async function loadStoreData(userId) {
-            // 1. Tenta achar a loja pelo SLUG da URL
-            let { data: store, error } = await supabase
+            let { data: store, error } = await sbClient
                 .from('estabelecimentos')
                 .select('*')
-                .eq('dono_id', userId) // <--- O PULO DO GATO AQUI
+                .eq('dono_id', userId)
                 .single();
 
-            // 2. Se não achou loja, mas o usuário está logado, oferece criar
             if (!store) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('setup-screen').classList.remove('hidden');
-                document.getElementById('setup-slug').innerText = URL_SLUG;
-                return;
-            }
-
-            // 3. Verifica se o usuário logado é o DONO
-            if (store.dono_id !== userId) {
-                alert("ACESSO NEGADO: Você não é o dono desta loja.");
-                await supabase.auth.signOut();
                 return;
             }
 
@@ -224,23 +209,27 @@
 
         async function createStore() {
             const name = document.getElementById('new-store-name').value;
-            const { data: { user } } = await supabase.auth.getUser();
+            const slugInput = document.getElementById('new-store-slug').value;
+            const { data: { user } } = await sbClient.auth.getUser();
 
-            if(!name) return alert("Digite um nome!");
+            if(!name || !slugInput) return alert("Preencha o nome e o link!");
 
-            const { data, error } = await supabase.from('estabelecimentos').insert([
+            const cleanSlug = slugInput.toLowerCase().trim().replace(/\s+/g, '-');
+
+            const { data, error } = await sbClient.from('estabelecimentos').insert([
                 { 
                     dono_id: user.id,
-                    slug: URL_SLUG,
+                    slug: cleanSlug,
                     nome_fantasia: name,
-                    telefone_whatsapp: '550000000000',
+                    telefone_whatsapp: '5518999999999', // Num padrão
                     horario_abertura: '08:00',
                     horario_fechamento: '18:00'
                 }
             ]).select().single();
 
             if(error) {
-                alert("Erro ao criar: " + error.message);
+                if(error.code === '23505') alert("Este link (slug) já existe. Escolha outro.");
+                else alert("Erro: " + error.message);
             } else {
                 document.getElementById('setup-screen').classList.add('hidden');
                 CURRENT_STORE = data;
@@ -252,7 +241,6 @@
             document.getElementById('dashboard').classList.remove('hidden');
             document.getElementById('dash-store-name').innerText = CURRENT_STORE.nome_fantasia;
             
-            // Preenche config
             document.getElementById('cfg-name').value = CURRENT_STORE.nome_fantasia;
             document.getElementById('cfg-phone').value = CURRENT_STORE.telefone_whatsapp;
             document.getElementById('cfg-open').value = CURRENT_STORE.horario_abertura;
@@ -263,27 +251,26 @@
             loadMenu();
         }
 
+        // --- MENU ---
         async function loadMenu() {
             const list = document.getElementById('categories-list');
             list.innerHTML = '<p class="text-center text-gray-400">Atualizando...</p>';
 
-            // Busca categorias
-            const { data: cats } = await supabase
+            const { data: cats } = await sbClient
                 .from('categorias')
                 .select('*')
                 .eq('estabelecimento_id', CURRENT_STORE.id)
                 .order('ordem', { ascending: true });
 
-            CURRENT_CATEGORIES = cats;
+            CURRENT_CATEGORIES = cats || [];
 
-            // Busca produtos
-            const { data: prods } = await supabase
+            const { data: prods } = await sbClient
                 .from('produtos')
                 .select('*')
                 .eq('estabelecimento_id', CURRENT_STORE.id)
                 .order('nome');
 
-            renderMenu(cats, prods);
+            renderMenu(cats || [], prods || []);
         }
 
         function renderMenu(cats, prods) {
@@ -291,20 +278,16 @@
             list.innerHTML = "";
 
             if(cats.length === 0) {
-                list.innerHTML = `<div class="text-center p-8 bg-white rounded-xl border border-dashed border-gray-300">
-                    <p class="text-gray-500 mb-2">Seu cardápio está vazio.</p>
-                    <p class="text-sm text-gray-400">Crie sua primeira categoria acima.</p>
-                </div>`;
+                list.innerHTML = `<div class="text-center p-8 bg-white rounded-xl border border-dashed border-gray-300"><p class="text-gray-500">Seu cardápio está vazio.</p></div>`;
                 return;
             }
 
             cats.forEach(cat => {
                 const catProds = prods.filter(p => p.categoria_id === cat.id);
-                
                 let prodHtml = "";
+                
                 catProds.forEach(p => {
                     const statusDot = p.ativo ? '<span class="w-2 h-2 rounded-full bg-green-500 inline-block mr-1"></span>' : '<span class="w-2 h-2 rounded-full bg-red-300 inline-block mr-1"></span>';
-                    
                     prodHtml += `
                         <div onclick='openProductModal(${JSON.stringify(p)})' class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100 cursor-pointer hover:bg-orange-50 transition">
                             <img src="${p.imagem_url || 'https://placehold.co/100'}" class="w-12 h-12 rounded object-cover bg-gray-200">
@@ -313,78 +296,44 @@
                                 <p class="text-xs text-gray-500">${statusDot} R$ ${p.preco}</p>
                             </div>
                             <i class="fas fa-chevron-right text-gray-300"></i>
-                        </div>
-                    `;
+                        </div>`;
                 });
-
-                const addBtn = catProds.length >= 30 
-                    ? `<span class="text-xs text-red-400">Max 30 itens atingido</span>`
-                    : `<button onclick="openProductModal(null, '${cat.id}')" class="text-xs text-orange-600 font-bold hover:underline">+ Adicionar Produto</button>`;
 
                 const html = `
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                         <div class="flex justify-between items-center mb-3 pb-2 border-b border-gray-50">
                             <h3 class="font-bold text-gray-800">${cat.nome} <span class="text-xs font-normal text-gray-400">(${catProds.length} itens)</span></h3>
-                            ${addBtn}
+                            <button onclick="openProductModal(null, '${cat.id}')" class="text-xs text-orange-600 font-bold hover:underline">+ Produto</button>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            ${prodHtml}
-                        </div>
-                    </div>
-                `;
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">${prodHtml}</div>
+                    </div>`;
                 list.insertAdjacentHTML('beforeend', html);
             });
         }
 
-        // --- AÇÕES DO USUÁRIO ---
-        
-        // Categorias
+        // --- FUNÇÕES DE CADASTRO ---
         async function addCategory() {
-            if(CURRENT_CATEGORIES.length >= 6) return alert("Limite máximo de 6 categorias atingido.");
-            
+            if(CURRENT_CATEGORIES.length >= 6) return alert("Limite de 6 categorias.");
             const name = document.getElementById('new-cat-name').value;
             if(!name) return;
-
-            const { error } = await supabase.from('categorias').insert([{
-                estabelecimento_id: CURRENT_STORE.id,
-                nome: name,
-                ordem: CURRENT_CATEGORIES.length + 1
-            }]);
-
+            const { error } = await sbClient.from('categorias').insert([{ estabelecimento_id: CURRENT_STORE.id, nome: name, ordem: CURRENT_CATEGORIES.length + 1 }]);
             if(error) alert(error.message);
-            else {
-                closeModal('modal-cat');
-                document.getElementById('new-cat-name').value = '';
-                loadMenu();
-            }
+            else { closeModal('modal-cat'); document.getElementById('new-cat-name').value = ''; loadMenu(); }
         }
 
-        // Produtos
         function openProductModal(product = null, catId = null) {
-            const modal = document.getElementById('modal-prod');
-            modal.classList.remove('hidden');
-            
+            document.getElementById('modal-prod').classList.remove('hidden');
             if (product) {
-                // Modo Edição
                 document.getElementById('prod-id').value = product.id;
                 document.getElementById('prod-cat-id').value = product.categoria_id;
                 document.getElementById('prod-name').value = product.nome;
                 document.getElementById('prod-desc').value = product.descricao || '';
                 document.getElementById('prod-price').value = product.preco;
                 document.getElementById('prod-active').checked = product.ativo;
-                
-                const preview = document.getElementById('preview-img');
-                if(product.imagem_url) {
-                    preview.src = product.imagem_url;
-                    preview.classList.remove('hidden');
-                    document.getElementById('upload-placeholder').classList.add('hidden');
-                } else {
-                    resetImagePreview();
-                }
-
+                if(product.imagem_url) { document.getElementById('preview-img').src = product.imagem_url; document.getElementById('preview-img').classList.remove('hidden'); document.getElementById('upload-placeholder').classList.add('hidden'); }
+                else { resetImagePreview(); }
                 document.getElementById('btn-delete-prod').classList.remove('hidden');
             } else {
-                // Modo Criação
                 document.getElementById('prod-id').value = '';
                 document.getElementById('prod-cat-id').value = catId;
                 document.getElementById('prod-name').value = '';
@@ -398,10 +347,7 @@
 
         async function saveProduct() {
             const btn = document.getElementById('btn-save-prod');
-            const originalText = btn.innerText;
-            btn.innerText = "Salvando...";
-            btn.disabled = true;
-
+            btn.innerText = "Salvando..."; btn.disabled = true;
             try {
                 const id = document.getElementById('prod-id').value;
                 const catId = document.getElementById('prod-cat-id').value;
@@ -410,69 +356,35 @@
                 const active = document.getElementById('prod-active').checked;
                 const desc = document.getElementById('prod-desc').value;
                 const fileInput = document.getElementById('prod-img');
-
-                if(!name || !price) throw new Error("Nome e Preço são obrigatórios.");
+                if(!name || !price) throw new Error("Nome e Preço obrigatórios.");
 
                 let imageUrl = null;
-
-                // Upload Imagem (se houver arquivo novo)
                 if(fileInput.files.length > 0) {
                     const file = fileInput.files[0];
                     const fileExt = file.name.split('.').pop();
                     const fileName = `${CURRENT_STORE.id}/${Date.now()}.${fileExt}`;
-
-                    const { error: uploadError } = await supabase.storage
-                        .from('lojas')
-                        .upload(fileName, file);
-
-                    if(uploadError) throw uploadError;
-
-                    const { data: { publicUrl } } = supabase.storage
-                        .from('lojas')
-                        .getPublicUrl(fileName);
-                    
-                    imageUrl = publicUrl;
+                    const { error } = await sbClient.storage.from('lojas').upload(fileName, file);
+                    if(error) throw error;
+                    const { data } = sbClient.storage.from('lojas').getPublicUrl(fileName);
+                    imageUrl = data.publicUrl;
                 }
 
-                const payload = {
-                    nome: name,
-                    preco: price,
-                    descricao: desc,
-                    ativo: active,
-                    estabelecimento_id: CURRENT_STORE.id,
-                    categoria_id: catId
-                };
-
+                const payload = { nome: name, preco: price, descricao: desc, ativo: active, estabelecimento_id: CURRENT_STORE.id, categoria_id: catId };
                 if(imageUrl) payload.imagem_url = imageUrl;
 
-                if(id) {
-                    // Update
-                    const { error } = await supabase.from('produtos').update(payload).eq('id', id);
-                    if(error) throw error;
-                } else {
-                    // Insert
-                    const { error } = await supabase.from('produtos').insert([payload]);
-                    if(error) throw error;
-                }
+                if(id) await sbClient.from('produtos').update(payload).eq('id', id);
+                else await sbClient.from('produtos').insert([payload]);
 
-                closeModal('modal-prod');
-                loadMenu();
-                Toastify({ text: "Produto salvo!", style: { background: "#16A34A" } }).showToast();
-
-            } catch (e) {
-                alert("Erro: " + e.message);
-            } finally {
-                btn.innerText = originalText;
-                btn.disabled = false;
-            }
+                closeModal('modal-prod'); loadMenu(); Toastify({ text: "Salvo!", style: { background: "#16A34A" } }).showToast();
+            } catch (e) { alert("Erro: " + e.message); } 
+            finally { btn.innerText = "Salvar"; btn.disabled = false; }
         }
 
         async function deleteProduct() {
-            if(!confirm("Tem certeza que deseja excluir?")) return;
+            if(!confirm("Excluir?")) return;
             const id = document.getElementById('prod-id').value;
-            await supabase.from('produtos').delete().eq('id', id);
-            closeModal('modal-prod');
-            loadMenu();
+            await sbClient.from('produtos').delete().eq('id', id);
+            closeModal('modal-prod'); loadMenu();
         }
 
         async function saveSettings() {
@@ -483,55 +395,27 @@
                 horario_fechamento: document.getElementById('cfg-close').value,
                 cor_primaria: document.getElementById('cfg-color').value
             };
-
-            const { error } = await supabase
-                .from('estabelecimentos')
-                .update(updates)
-                .eq('id', CURRENT_STORE.id);
-
-            if(error) alert("Erro ao salvar");
-            else Toastify({ text: "Configurações salvas!", style: { background: "#16A34A" } }).showToast();
+            const { error } = await sbClient.from('estabelecimentos').update(updates).eq('id', CURRENT_STORE.id);
+            if(error) alert("Erro ao salvar"); else Toastify({ text: "Configurações salvas!", style: { background: "#16A34A" } }).showToast();
         }
 
-        // --- UTILITÁRIOS ---
         function switchTab(tab) {
             document.getElementById('content-menu').classList.add('hidden');
             document.getElementById('content-config').classList.add('hidden');
-            document.getElementById('tab-menu').classList.replace('border-orange-600', 'border-transparent');
-            document.getElementById('tab-menu').classList.replace('text-orange-600', 'text-gray-500');
-            document.getElementById('tab-config').classList.replace('border-orange-600', 'border-transparent');
-            document.getElementById('tab-config').classList.replace('text-orange-600', 'text-gray-500');
-
             document.getElementById(`content-${tab}`).classList.remove('hidden');
-            document.getElementById(`tab-${tab}`).classList.replace('border-transparent', 'border-orange-600');
-            document.getElementById(`tab-${tab}`).classList.replace('text-gray-500', 'text-orange-600');
         }
-
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
         function handleImagePreview(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('preview-img').src = e.target.result;
-                    document.getElementById('preview-img').classList.remove('hidden');
-                    document.getElementById('upload-placeholder').classList.add('hidden');
-                }
+                reader.onload = function(e) { document.getElementById('preview-img').src = e.target.result; document.getElementById('preview-img').classList.remove('hidden'); document.getElementById('upload-placeholder').classList.add('hidden'); }
                 reader.readAsDataURL(input.files[0]);
             }
         }
-
-        function resetImagePreview() {
-            document.getElementById('preview-img').src = '';
-            document.getElementById('preview-img').classList.add('hidden');
-            document.getElementById('upload-placeholder').classList.remove('hidden');
-            document.getElementById('prod-img').value = '';
-        }
-
-        // Inicialização
+        function resetImagePreview() { document.getElementById('preview-img').src = ''; document.getElementById('preview-img').classList.add('hidden'); document.getElementById('upload-placeholder').classList.remove('hidden'); document.getElementById('prod-img').value = ''; }
+        
         checkSession();
-
     </script>
 </body>
 </html>
