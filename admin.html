@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo | ZapFlow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-sans">
+
+    <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+            <h2 class="text-2xl font-bold text-gray-800 text-center mb-2">Área do Cliente</h2>
+            <p class="text-gray-500 text-center mb-6 text-sm">Gerencie seu estabelecimento</p>
+            
+            <input type="email" id="email" placeholder="Seu E-mail" class="w-full p-3 mb-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+            <input type="password" id="password" placeholder="Sua Senha" class="w-full p-3 mb-6 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+            
+            <button onclick="handleLogin()" class="w-full bg-orange-600 text-white font-bold py-3 rounded-lg hover:bg-orange-700 transition">Entrar</button>
+            <p class="mt-4 text-center text-xs text-gray-400">Primeiro acesso? Entre em contato com o suporte.</p>
+        </div>
+    </div>
+
+    <div id="setup-screen" class="hidden min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md text-center">
+            <i class="fas fa-store text-6xl text-orange-200 mb-4"></i>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Loja Nova Detectada!</h2>
+            <p class="text-gray-600 mb-6">Nenhuma loja configurada para o endereço <span id="setup-slug" class="font-mono bg-gray-100 px-2 py-1 rounded">...</span>. Deseja criar agora?</p>
+            <input type="text" id="new-store-name" placeholder="Nome do Estabelecimento" class="w-full p-3 mb-4 border rounded-lg">
+            <button onclick="createStore()" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition">Criar Loja e Começar</button>
+        </div>
+    </div>
+
+    <div id="dashboard" class="hidden min-h-screen pb-20">
+        <header class="bg-white shadow-sm sticky top-0 z-20">
+            <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+                <div>
+                    <h1 class="font-bold text-gray-800 text-lg" id="dash-store-name">Carregando...</h1>
+                    <p class="text-xs text-green-600 font-bold"><i class="fas fa-circle text-[8px]"></i> Online</p>
+                </div>
+                <button onclick="logout()" class="text-gray-400 hover:text-red-500"><i class="fas fa-sign-out-alt text-xl"></i></button>
+            </div>
+            <div class="flex border-b border-gray-200 mt-2 px-4 max-w-5xl mx-auto gap-6">
+                <button onclick="switchTab('menu')" id="tab-menu" class="pb-3 border-b-2 border-orange-600 font-bold text-orange-600 text-sm">Cardápio</button>
+                <button onclick="switchTab('config')" id="tab-config" class="pb-3 border-b-2 border-transparent text-gray-500 font-medium hover:text-gray-700 text-sm">Configurações</button>
+            </div>
+        </header>
+
+        <main class="max-w-5xl mx-auto p-4">
+            
+            <div id="content-menu" class="space-y-6">
+                <div class="flex justify-between items-end mb-4">
+                    <h2 class="text-lg font-bold text-gray-700">Categorias</h2>
+                    <button onclick="openModal('modal-cat')" class="text-xs bg-gray-900 text-white px-3 py-2 rounded-lg hover:bg-black transition"><i class="fas fa-plus"></i> Nova Aba</button>
+                </div>
+
+                <div id="categories-list" class="space-y-4">
+                    <p class="text-center text-gray-400 py-10">Carregando cardápio...</p>
+                </div>
+            </div>
+
+            <div id="content-config" class="hidden space-y-6 max-w-lg mx-auto bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <h3 class="font-bold text-gray-800 border-b pb-2 mb-4">Dados da Loja</h3>
+                
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">Nome Fantasia</label>
+                    <input type="text" id="cfg-name" class="w-full p-2 border rounded bg-gray-50">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">Whatsapp (apenas números)</label>
+                    <input type="text" id="cfg-phone" class="w-full p-2 border rounded bg-gray-50">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">Abre às</label>
+                        <input type="time" id="cfg-open" class="w-full p-2 border rounded bg-gray-50">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">Fecha às</label>
+                        <input type="time" id="cfg-close" class="w-full p-2 border rounded bg-gray-50">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">Cor Primária (Hex)</label>
+                    <div class="flex gap-2">
+                        <input type="color" id="cfg-color-picker" class="h-10 w-10 p-0 border-0" onchange="document.getElementById('cfg-color').value = this.value">
+                        <input type="text" id="cfg-color" class="w-full p-2 border rounded bg-gray-50">
+                    </div>
+                </div>
+
+                <button onclick="saveSettings()" class="w-full bg-orange-600 text-white font-bold py-3 rounded-lg mt-4">Salvar Alterações</button>
+            </div>
+        </main>
+    </div>
+
+    <div id="modal-cat" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl p-6 w-full max-w-sm relative">
+            <h3 class="font-bold text-lg mb-4">Nova Categoria</h3>
+            <input type="text" id="new-cat-name" placeholder="Ex: Bebidas, Promoções..." class="w-full p-3 border rounded-lg mb-4">
+            <div class="flex gap-2">
+                <button onclick="closeModal('modal-cat')" class="flex-1 py-3 text-gray-500 font-bold bg-gray-100 rounded-lg">Cancelar</button>
+                <button onclick="addCategory()" class="flex-1 py-3 bg-orange-600 text-white font-bold rounded-lg">Criar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-prod" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md relative my-auto">
+            <h3 class="font-bold text-lg mb-4">Gerenciar Produto</h3>
+            <input type="hidden" id="prod-id">
+            <input type="hidden" id="prod-cat-id">
+
+            <div class="mb-4 text-center">
+                <div class="w-32 h-32 bg-gray-100 mx-auto rounded-lg flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-300 relative group">
+                    <img id="preview-img" class="w-full h-full object-cover hidden">
+                    <div id="upload-placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
+                        <i class="fas fa-camera text-2xl"></i>
+                        <span class="text-xs mt-1">Clique para alterar</span>
+                    </div>
+                    <input type="file" id="prod-img" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="handleImagePreview(this)">
+                </div>
+                <p class="text-xs text-gray-400 mt-2">Max 2MB (JPG/PNG)</p>
+            </div>
+
+            <input type="text" id="prod-name" placeholder="Nome do Produto" class="w-full p-3 border rounded-lg mb-3">
+            <textarea id="prod-desc" placeholder="Descrição curta" class="w-full p-3 border rounded-lg mb-3 h-20 resize-none"></textarea>
+            
+            <div class="flex gap-3 mb-4">
+                <div class="w-1/2">
+                    <label class="text-xs font-bold text-gray-500">Preço (R$)</label>
+                    <input type="number" id="prod-price" placeholder="0.00" step="0.01" class="w-full p-3 border rounded-lg">
+                </div>
+                <div class="w-1/2 flex items-center justify-between px-3 border rounded-lg bg-gray-50">
+                    <label class="text-xs font-bold text-gray-500">Ativo?</label>
+                    <input type="checkbox" id="prod-active" checked class="w-5 h-5 text-orange-600 rounded">
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="closeModal('modal-prod')" class="flex-1 py-3 text-gray-500 font-bold bg-gray-100 rounded-lg">Cancelar</button>
+                <button onclick="saveProduct()" id="btn-save-prod" class="flex-1 py-3 bg-green-600 text-white font-bold rounded-lg">Salvar</button>
+            </div>
+            
+            <button onclick="deleteProduct()" id="btn-delete-prod" class="w-full mt-3 py-2 text-red-500 text-sm font-bold hidden">Excluir Produto</button>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURAÇÃO INICIAL (COLE SUAS CHAVES AQUI) ---
+        const SUPABASE_URL = 'https://axfyfeexmdkcmhgtqelc.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_gQPdtNGsVQWq6YUgz0Wgqw_GLrxVgxM'; 
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        let CURRENT_STORE = null;
+        let CURRENT_CATEGORIES = [];
+        // Pega o slug da URL (ex: zapflow.com.br/gas/admin -> slug = 'gas')
+        // Se estiver na raiz, use um padrão ou erro. Assumindo subpasta:
+        let URL_SLUG = window.location.pathname.split('/')[1] || 'default'; 
+        if(window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1')) {
+             // Para testes locais, pode forçar um slug
+             // URL_SLUG = 'gas'; 
+        }
+
+        // --- SISTEMA DE LOGIN ---
+        async function checkSession() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                document.getElementById('login-screen').classList.add('hidden');
+                loadStoreData(session.user.id);
+            } else {
+                document.getElementById('login-screen').classList.remove('hidden');
+            }
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) {
+                alert('Erro ao entrar: ' + error.message);
+            } else {
+                checkSession();
+            }
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.reload();
+        }
+
+        // --- CARREGAMENTO DE DADOS ---
+        async function loadStoreData(userId) {
+            // 1. Tenta achar a loja pelo SLUG da URL
+            let { data: store, error } = await supabase
+                .from('estabelecimentos')
+                .select('*')
+                .eq('dono_id', userId) // <--- O PULO DO GATO AQUI
+                .single();
+
+            // 2. Se não achou loja, mas o usuário está logado, oferece criar
+            if (!store) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('setup-screen').classList.remove('hidden');
+                document.getElementById('setup-slug').innerText = URL_SLUG;
+                return;
+            }
+
+            // 3. Verifica se o usuário logado é o DONO
+            if (store.dono_id !== userId) {
+                alert("ACESSO NEGADO: Você não é o dono desta loja.");
+                await supabase.auth.signOut();
+                return;
+            }
+
+            CURRENT_STORE = store;
+            initDashboard();
+        }
+
+        async function createStore() {
+            const name = document.getElementById('new-store-name').value;
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if(!name) return alert("Digite um nome!");
+
+            const { data, error } = await supabase.from('estabelecimentos').insert([
+                { 
+                    dono_id: user.id,
+                    slug: URL_SLUG,
+                    nome_fantasia: name,
+                    telefone_whatsapp: '550000000000',
+                    horario_abertura: '08:00',
+                    horario_fechamento: '18:00'
+                }
+            ]).select().single();
+
+            if(error) {
+                alert("Erro ao criar: " + error.message);
+            } else {
+                document.getElementById('setup-screen').classList.add('hidden');
+                CURRENT_STORE = data;
+                initDashboard();
+            }
+        }
+
+        function initDashboard() {
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('dash-store-name').innerText = CURRENT_STORE.nome_fantasia;
+            
+            // Preenche config
+            document.getElementById('cfg-name').value = CURRENT_STORE.nome_fantasia;
+            document.getElementById('cfg-phone').value = CURRENT_STORE.telefone_whatsapp;
+            document.getElementById('cfg-open').value = CURRENT_STORE.horario_abertura;
+            document.getElementById('cfg-close').value = CURRENT_STORE.horario_fechamento;
+            document.getElementById('cfg-color').value = CURRENT_STORE.cor_primaria || '#F97316';
+            document.getElementById('cfg-color-picker').value = CURRENT_STORE.cor_primaria || '#F97316';
+
+            loadMenu();
+        }
+
+        async function loadMenu() {
+            const list = document.getElementById('categories-list');
+            list.innerHTML = '<p class="text-center text-gray-400">Atualizando...</p>';
+
+            // Busca categorias
+            const { data: cats } = await supabase
+                .from('categorias')
+                .select('*')
+                .eq('estabelecimento_id', CURRENT_STORE.id)
+                .order('ordem', { ascending: true });
+
+            CURRENT_CATEGORIES = cats;
+
+            // Busca produtos
+            const { data: prods } = await supabase
+                .from('produtos')
+                .select('*')
+                .eq('estabelecimento_id', CURRENT_STORE.id)
+                .order('nome');
+
+            renderMenu(cats, prods);
+        }
+
+        function renderMenu(cats, prods) {
+            const list = document.getElementById('categories-list');
+            list.innerHTML = "";
+
+            if(cats.length === 0) {
+                list.innerHTML = `<div class="text-center p-8 bg-white rounded-xl border border-dashed border-gray-300">
+                    <p class="text-gray-500 mb-2">Seu cardápio está vazio.</p>
+                    <p class="text-sm text-gray-400">Crie sua primeira categoria acima.</p>
+                </div>`;
+                return;
+            }
+
+            cats.forEach(cat => {
+                const catProds = prods.filter(p => p.categoria_id === cat.id);
+                
+                let prodHtml = "";
+                catProds.forEach(p => {
+                    const statusDot = p.ativo ? '<span class="w-2 h-2 rounded-full bg-green-500 inline-block mr-1"></span>' : '<span class="w-2 h-2 rounded-full bg-red-300 inline-block mr-1"></span>';
+                    
+                    prodHtml += `
+                        <div onclick='openProductModal(${JSON.stringify(p)})' class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100 cursor-pointer hover:bg-orange-50 transition">
+                            <img src="${p.imagem_url || 'https://placehold.co/100'}" class="w-12 h-12 rounded object-cover bg-gray-200">
+                            <div class="flex-1">
+                                <p class="font-bold text-gray-700 text-sm">${p.nome}</p>
+                                <p class="text-xs text-gray-500">${statusDot} R$ ${p.preco}</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-300"></i>
+                        </div>
+                    `;
+                });
+
+                const addBtn = catProds.length >= 30 
+                    ? `<span class="text-xs text-red-400">Max 30 itens atingido</span>`
+                    : `<button onclick="openProductModal(null, '${cat.id}')" class="text-xs text-orange-600 font-bold hover:underline">+ Adicionar Produto</button>`;
+
+                const html = `
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-center mb-3 pb-2 border-b border-gray-50">
+                            <h3 class="font-bold text-gray-800">${cat.nome} <span class="text-xs font-normal text-gray-400">(${catProds.length} itens)</span></h3>
+                            ${addBtn}
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            ${prodHtml}
+                        </div>
+                    </div>
+                `;
+                list.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+        // --- AÇÕES DO USUÁRIO ---
+        
+        // Categorias
+        async function addCategory() {
+            if(CURRENT_CATEGORIES.length >= 6) return alert("Limite máximo de 6 categorias atingido.");
+            
+            const name = document.getElementById('new-cat-name').value;
+            if(!name) return;
+
+            const { error } = await supabase.from('categorias').insert([{
+                estabelecimento_id: CURRENT_STORE.id,
+                nome: name,
+                ordem: CURRENT_CATEGORIES.length + 1
+            }]);
+
+            if(error) alert(error.message);
+            else {
+                closeModal('modal-cat');
+                document.getElementById('new-cat-name').value = '';
+                loadMenu();
+            }
+        }
+
+        // Produtos
+        function openProductModal(product = null, catId = null) {
+            const modal = document.getElementById('modal-prod');
+            modal.classList.remove('hidden');
+            
+            if (product) {
+                // Modo Edição
+                document.getElementById('prod-id').value = product.id;
+                document.getElementById('prod-cat-id').value = product.categoria_id;
+                document.getElementById('prod-name').value = product.nome;
+                document.getElementById('prod-desc').value = product.descricao || '';
+                document.getElementById('prod-price').value = product.preco;
+                document.getElementById('prod-active').checked = product.ativo;
+                
+                const preview = document.getElementById('preview-img');
+                if(product.imagem_url) {
+                    preview.src = product.imagem_url;
+                    preview.classList.remove('hidden');
+                    document.getElementById('upload-placeholder').classList.add('hidden');
+                } else {
+                    resetImagePreview();
+                }
+
+                document.getElementById('btn-delete-prod').classList.remove('hidden');
+            } else {
+                // Modo Criação
+                document.getElementById('prod-id').value = '';
+                document.getElementById('prod-cat-id').value = catId;
+                document.getElementById('prod-name').value = '';
+                document.getElementById('prod-desc').value = '';
+                document.getElementById('prod-price').value = '';
+                document.getElementById('prod-active').checked = true;
+                resetImagePreview();
+                document.getElementById('btn-delete-prod').classList.add('hidden');
+            }
+        }
+
+        async function saveProduct() {
+            const btn = document.getElementById('btn-save-prod');
+            const originalText = btn.innerText;
+            btn.innerText = "Salvando...";
+            btn.disabled = true;
+
+            try {
+                const id = document.getElementById('prod-id').value;
+                const catId = document.getElementById('prod-cat-id').value;
+                const name = document.getElementById('prod-name').value;
+                const price = document.getElementById('prod-price').value;
+                const active = document.getElementById('prod-active').checked;
+                const desc = document.getElementById('prod-desc').value;
+                const fileInput = document.getElementById('prod-img');
+
+                if(!name || !price) throw new Error("Nome e Preço são obrigatórios.");
+
+                let imageUrl = null;
+
+                // Upload Imagem (se houver arquivo novo)
+                if(fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${CURRENT_STORE.id}/${Date.now()}.${fileExt}`;
+
+                    const { error: uploadError } = await supabase.storage
+                        .from('lojas')
+                        .upload(fileName, file);
+
+                    if(uploadError) throw uploadError;
+
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('lojas')
+                        .getPublicUrl(fileName);
+                    
+                    imageUrl = publicUrl;
+                }
+
+                const payload = {
+                    nome: name,
+                    preco: price,
+                    descricao: desc,
+                    ativo: active,
+                    estabelecimento_id: CURRENT_STORE.id,
+                    categoria_id: catId
+                };
+
+                if(imageUrl) payload.imagem_url = imageUrl;
+
+                if(id) {
+                    // Update
+                    const { error } = await supabase.from('produtos').update(payload).eq('id', id);
+                    if(error) throw error;
+                } else {
+                    // Insert
+                    const { error } = await supabase.from('produtos').insert([payload]);
+                    if(error) throw error;
+                }
+
+                closeModal('modal-prod');
+                loadMenu();
+                Toastify({ text: "Produto salvo!", style: { background: "#16A34A" } }).showToast();
+
+            } catch (e) {
+                alert("Erro: " + e.message);
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function deleteProduct() {
+            if(!confirm("Tem certeza que deseja excluir?")) return;
+            const id = document.getElementById('prod-id').value;
+            await supabase.from('produtos').delete().eq('id', id);
+            closeModal('modal-prod');
+            loadMenu();
+        }
+
+        async function saveSettings() {
+            const updates = {
+                nome_fantasia: document.getElementById('cfg-name').value,
+                telefone_whatsapp: document.getElementById('cfg-phone').value,
+                horario_abertura: document.getElementById('cfg-open').value,
+                horario_fechamento: document.getElementById('cfg-close').value,
+                cor_primaria: document.getElementById('cfg-color').value
+            };
+
+            const { error } = await supabase
+                .from('estabelecimentos')
+                .update(updates)
+                .eq('id', CURRENT_STORE.id);
+
+            if(error) alert("Erro ao salvar");
+            else Toastify({ text: "Configurações salvas!", style: { background: "#16A34A" } }).showToast();
+        }
+
+        // --- UTILITÁRIOS ---
+        function switchTab(tab) {
+            document.getElementById('content-menu').classList.add('hidden');
+            document.getElementById('content-config').classList.add('hidden');
+            document.getElementById('tab-menu').classList.replace('border-orange-600', 'border-transparent');
+            document.getElementById('tab-menu').classList.replace('text-orange-600', 'text-gray-500');
+            document.getElementById('tab-config').classList.replace('border-orange-600', 'border-transparent');
+            document.getElementById('tab-config').classList.replace('text-orange-600', 'text-gray-500');
+
+            document.getElementById(`content-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}`).classList.replace('border-transparent', 'border-orange-600');
+            document.getElementById(`tab-${tab}`).classList.replace('text-gray-500', 'text-orange-600');
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function handleImagePreview(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview-img').src = e.target.result;
+                    document.getElementById('preview-img').classList.remove('hidden');
+                    document.getElementById('upload-placeholder').classList.add('hidden');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function resetImagePreview() {
+            document.getElementById('preview-img').src = '';
+            document.getElementById('preview-img').classList.add('hidden');
+            document.getElementById('upload-placeholder').classList.remove('hidden');
+            document.getElementById('prod-img').value = '';
+        }
+
+        // Inicialização
+        checkSession();
+
+    </script>
+</body>
+</html>
