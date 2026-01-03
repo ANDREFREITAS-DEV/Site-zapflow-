@@ -84,9 +84,9 @@
             </div>
 
             <div class="mt-8 text-center space-y-3">
-                <a href="../" class="block w-full py-4 bg-gray-900 text-white font-bold rounded-xl text-sm hover:bg-black transition shadow-lg transform active:scale-95">
+                <button onclick="voltarParaLoja()" class="block w-full py-4 bg-gray-900 text-white font-bold rounded-xl text-sm hover:bg-black transition shadow-lg transform active:scale-95">
                     <i class="fas fa-arrow-left mr-2"></i> Voltar ao Cardápio
-                </a>
+                </button>
                 <p class="text-[10px] text-gray-400">ZapFlow Tecnologia</p>
             </div>
 
@@ -110,7 +110,6 @@
                 return;
             }
 
-            // Atualiza o reloginho visual
             updateLastCheckTime();
 
             const { data: order, error } = await sbClient
@@ -119,11 +118,7 @@
                 .eq('id', id)
                 .single();
 
-            if(error || !order) {
-                // Se der erro de conexão silencioso no auto-refresh, não quebra a tela
-                console.log("Erro ao buscar atualização:", error);
-                return;
-            }
+            if(error || !order) return;
 
             renderOrder(order);
         }
@@ -132,21 +127,17 @@
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('receipt-card').classList.remove('hidden');
 
-            // --- 1. Lógica de Status Inteligente ---
             const statusDiv = document.getElementById('status-bar');
             const statusTxt = document.getElementById('status-text');
             const iconDiv = document.getElementById('status-icon-container');
 
-            // Só toca som ou notifica se o status mudou desde a última checagem
             if(currentStatus !== '' && currentStatus !== order.status) {
                 Toastify({ text: `Status atualizado: ${order.status}`, style: { background: "#3b82f6" } }).showToast();
-                // Aqui você poderia adicionar um som de notificação no futuro
             }
             currentStatus = order.status;
 
             statusTxt.innerText = order.status;
             
-            // Cores e Ícones por Status
             if(order.status === 'Pendente') {
                 statusDiv.className = "bg-yellow-400 text-yellow-900 p-6 text-center shadow-inner";
                 iconDiv.innerHTML = '<i class="fas fa-clock fa-2x animate-pulse"></i>';
@@ -159,12 +150,11 @@
             } else if (order.status === 'Entregue') {
                 statusDiv.className = "bg-green-600 text-white p-6 text-center shadow-lg";
                 iconDiv.innerHTML = '<i class="fas fa-check-circle fa-2x"></i>';
-            } else { // Cancelado
+            } else { 
                 statusDiv.className = "bg-red-500 text-white p-6 text-center";
                 iconDiv.innerHTML = '<i class="fas fa-times-circle fa-2x"></i>';
             }
 
-            // --- 2. Dados Fixos (Só preenche se estiverem vazios para não piscar a tela) ---
             if(document.getElementById('order-code').innerText === '--') {
                 document.getElementById('store-name').innerText = order.estabelecimentos.nome_fantasia;
                 document.getElementById('order-code').innerText = order.codigo_pedido;
@@ -179,7 +169,6 @@
                     document.getElementById('pickup-box').classList.remove('hidden');
                 }
 
-                // Renderiza lista de itens uma única vez
                 const list = document.getElementById('items-list');
                 list.innerHTML = '';
                 order.itens.forEach(item => {
@@ -213,15 +202,16 @@
             document.getElementById('last-update').innerText = `Atualizado às ${timeStr}`;
         }
 
-        // Inicializa
+        // --- FUNÇÃO DE VOLTAR INTELIGENTE ---
+        function voltarParaLoja() {
+            // Pega a URL atual, separa pelo '/pedido' e pega só a primeira parte (a raiz da loja)
+            // Ex: usezapflow.com.br/cliente/gas-fiel/pedido?id=123 -> vira usezapflow.com.br/cliente/gas-fiel
+            const lojaUrl = window.location.href.split('/pedido')[0];
+            window.location.href = lojaUrl;
+        }
+
         init();
-
-        // --- UX: AUTO REFRESH ---
-        // Atualiza o status a cada 30 segundos sem recarregar a página
-        setInterval(() => {
-            init();
-        }, 30000); 
-
+        setInterval(() => { init(); }, 30000); 
     </script>
 </body>
 </html>
