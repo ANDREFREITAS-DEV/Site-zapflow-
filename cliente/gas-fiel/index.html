@@ -412,52 +412,131 @@
             else { ind.className="w-2.5 h-2.5 rounded-full bg-red-500"; txt.innerText="FECHADO"; txt.className="text-xs font-bold text-red-500"; }
         }
 
-        window.finalizeOrder = () => {
-            const name = document.getElementById('client-name').value;
-            const phone = document.getElementById('client-phone').value;
-            if(name.length < 3 || phone.length < 10) return alert("Informe nome e telefone.");
+        // Substitua todo o trecho do window.finalizeOrder antigo por este:
 
-            let msg = `*NOVO PEDIDO - ${STORE.nome_fantasia}*\n`;
-            msg += `👤 *Cliente:* ${name}\n📱 *Tel:* ${phone}\n\n`;
-            msg += `📦 *ITENS:*\n`;
+	window.finalizeOrder = async () => {
+    	const btn = document.getElementById('btn-finish');
+    
+    	// 1. Validações Básicas (Nome e Telefone)
+    	const name = document.getElementById('client-name').value;
+    		const phone = document.getElementById('client-phone').value;
+    	if (name.length < 3 || phone.length < 10) return alert("Por favor, informe seu nome e telefone corretamente.");
 
-            let sub = 0;
-            Object.keys(cart).forEach(id => {
-                const p = PRODUCTS.find(x => x.id===id);
-                msg += `▪️ ${cart[id]}x ${p.nome}\n`;
-                sub += p.preco * cart[id];
+    	// 2. Validações de Pagamento e Endereço
+    		const metodoPagamento = document.querySelector('input[name="payment"]:checked').value;
+    	const troco = document.getElementById('client-change').value;
+
+    	// Se for entrega, valida o endereço
+    	if (currentOrderType === 'delivery') {
+        const rua = document.getElementById('address-street').value;
+        if (!rua) return alert("Informe o endereço para entrega.");
+    	}
+
+    	// 3. Montar a lista de itens para salvar no banco
+    	const itensPedido = [];
+    	let subtotalCalculado = 0;
+
+    	Object.keys(cart).forEach(id => {
+        const p = PRODUCTS.find(x => x.id === id);
+        if(p) {
+            const totalItem = p.preco * cart[id];
+            subtotalCalculado += totalItem;
+            itensPedido.push({
+                produto_id: p.id,
+                nome: p.nome,
+                quantidade: cart[id],
+                preco_unitario: p.preco,
+                total: totalItem
             });
-
-            msg += `────────────────\n`;
-            
-            if(currentOrderType === 'delivery') {
-                const str = document.getElementById('address-street').value;
-                const dist = document.getElementById('address-district').value;
-                const comp = document.getElementById('address-comp').value;
-                if(!str) return alert("Informe o endereço.");
-                const fee = STORE.valor_entrega || 0;
-                msg += `🛵 *ENTREGA (${fee > 0 ? 'R$ '+fee.toFixed(2) : 'Grátis'})*\n`;
-                msg += `📍 ${str} - ${dist} ${comp ? '('+comp+')' : ''}\n`;
-                sub += fee;
-            } else {
-                msg += `🎒 *RETIRADA NO LOCAL*\n`;
-            }
-
-            // Observação
-            const obs = document.getElementById('client-obs').value;
-            if(obs) msg += `📝 *Obs:* ${obs}\n`;
-
-            const pay = document.querySelector('input[name="payment"]:checked').value;
-            msg += `💰 *TOTAL: R$ ${sub.toFixed(2)}*\n`;
-            msg += `💳 *Pag:* ${pay}`;
-            
-            if(pay === 'Dinheiro') {
-                const ch = document.getElementById('client-change').value;
-                if(ch) msg += ` (Troco para ${ch})`;
-            }
-
-            window.open(`https://wa.me/${STORE.telefone_whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
         }
+    });
+
+    const taxaEntrega = currentOrderType === 'delivery' ? (STORE.valor_entrega || 0) : 0;
+    const totalFinal = subtotalCalculado + taxaEntrega;
+
+    // Monta o objeto de endereço (ou null se for retirada)
+    const objetoEndereco = currentOrderType === 'delivery' ? {
+        rua: document.getElementById('address-street').value,
+        bairro: document.getElementById('address-district').value,
+        comp: document.getElementById('address-comp').value
+    } : null;
+
+    // 4. Feedback Visual (Loading)
+    const textoOriginal = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+    btn.disabled = true;
+
+    try {
+        // --- AQUI A MÁGICA ACONTECE (SALVA NO SUPABASE) ---
+        const { data, error } = await sbClient
+            .from('pedidos')
+            .insert([{
+                estabelecimento_id: STORE.id,
+                cliente: { nome: name, telefone: phone },
+                endereco: objetoEndereco,
+                itens: itensPedido, // Salva o array de produtos
+                pagamento: { 
+                    metodo: metodoPagamento, 
+                    troco: troco, 
+                    subtotal: subtotalCalculado, 
+                    taxa_entrega: taxaEntrega, 
+                    total: totalFinal 
+                },
+                status: 'Pendente'
+            }])
+            .select() // Retorna os dados salvos (incluindo o ID novo)
+            .single();
+
+        if (error) throw error;
+
+        // 5. Gera o Link e Monta a Mensagem do WhatsApp
+        const baseUrl = window.location.origin; // Pega o endereço do site atual
+        const linkRecibo = `${baseUrl}/pedido.html?id=${data.id}`;
+
+        let msg = `*NOVO PEDIDO #${data.codigo_pedido}* 📄\n`;
+        msg += `Acompanhe seu pedido aqui:\n${linkRecibo}\n\n`; // Link clicável no topo
+        msg += `👤 *Cliente:* ${name}\n`;
+        msg += `📱 *Tel:* ${phone}\n`;
+        msg += `────────────────\n`;
+        
+        // Lista resumida para o atendente ler rápido
+        itensPedido.forEach(item => {
+            msg += `▪️ ${item.quantidade}x ${item.nome}\n`;
+        });
+        
+        // Obs
+        const obs = document.getElementById('client-obs').value;
+        if(obs) msg += `📝 *Obs:* ${obs}\n`;
+        
+        msg += `────────────────\n`;
+        msg += `💰 *TOTAL: R$ ${totalFinal.toFixed(2)}*\n`;
+        msg += `💳 *Pag:* ${metodoPagamento}`;
+        if(troco) msg += ` (Troco p/ ${troco})`;
+        
+        if(currentOrderType === 'delivery') {
+            msg += `\n🛵 *Entrega:* ${objetoEndereco.rua}, ${objetoEndereco.bairro}`;
+        } else {
+            msg += `\n🎒 *Retirada no Local*`;
+        }
+
+        // Enviar para o Zap
+        window.open(`https://wa.me/${STORE.telefone_whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
+        
+        // Limpar carrinho e fechar modal
+        cart = {}; 
+        updateFloatCart(); 
+        closeCart();
+        Toastify({ text: "Pedido Realizado com Sucesso!", style: { background: "#16A34A" } }).showToast();
+
+    	} catch (err) {
+        console.error(err);
+        alert("Erro ao salvar pedido: " + err.message);
+    	} finally {
+        // Restaura o botão
+        btn.innerHTML = textoOriginal;
+        btn.disabled = false;
+    	}
+	}
 
     </script>
 </body>
