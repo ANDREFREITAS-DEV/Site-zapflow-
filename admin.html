@@ -271,7 +271,16 @@
             if (error) { alert('Erro: ' + error.message); btn.innerText = "Entrar"; btn.disabled = false; }
             else checkSession();
         }
-        async function logout() { await sbClient.auth.signOut(); window.location.reload(); }
+        async function logout() {
+	    try {
+	        await sbClient.auth.signOut(); // Avisa o Supabase para encerrar a sessão
+	        localStorage.clear(); // Limpa qualquer lixo da memória do navegador
+	        window.location.href = window.location.href; // Força recarregamento limpo
+	    } catch (error) {
+	        console.error("Erro ao sair:", error);
+	        window.location.reload();
+	    }
+	}
 
         async function loadStoreData(userId) {
             let { data: store } = await sbClient.from('estabelecimentos').select('*').eq('dono_id', userId).single();
