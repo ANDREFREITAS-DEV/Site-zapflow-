@@ -17,47 +17,25 @@
 
         /* --- CORREÇÃO DA IMPRESSÃO (V2 - Negrito e Maior) --- */
         @media print {
-            /* 1. Esconde tudo que NÃO seja o cupom */
-            body > :not(#printable-area) {
-                display: none !important;
-            }
-
-            /* 2. Força o cupom a aparecer */
+            body > :not(#printable-area) { display: none !important; }
             #printable-area {
                 display: block !important;
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                margin: 0;
-                padding: 0;
-                background: white;
-                
-                /* --- AQUI ESTÁ A MÁGICA --- */
+                position: absolute; top: 0; left: 0; width: 100%;
+                margin: 0; padding: 0; background: white;
                 color: black !important;
-                font-size: 14px !important; /* Aumentei a fonte */
-                font-weight: 900 !important; /* Negrito máximo */
-                font-family: 'Courier New', Courier, monospace; /* Fonte monoespaçada ajuda na leitura */
+                font-size: 14px !important;
+                font-weight: 900 !important;
+                font-family: 'Courier New', Courier, monospace;
             }
-
-            /* 3. Garante que TODO texto lá dentro seja negrito */
-            #printable-area * {
-                visibility: visible !important;
-                font-weight: 900 !important; /* Força negrito nos itens filhos também */
-                color: black !important;
-            }
-
-            /* 4. Remove margens */
+            #printable-area * { visibility: visible !important; font-weight: 900 !important; color: black !important; }
             @page { margin: 0; size: auto; }
         }
-        
         .coupon-font { font-family: 'Courier New', Courier, monospace; }
     </style>
 </head>
 <body class="bg-gray-50 font-sans text-gray-800">
 
-    <div id="printable-area" class="hidden coupon-font p-1 max-w-[300px] leading-tight">
-        </div>
+    <div id="printable-area" class="hidden coupon-font p-1 max-w-[300px] leading-tight"></div>
 
     <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
         <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
@@ -271,16 +249,18 @@
             if (error) { alert('Erro: ' + error.message); btn.innerText = "Entrar"; btn.disabled = false; }
             else checkSession();
         }
-        async function logout() {
-	    try {
-	        await sbClient.auth.signOut(); // Avisa o Supabase para encerrar a sessão
-	        localStorage.clear(); // Limpa qualquer lixo da memória do navegador
-	        window.location.href = window.location.href; // Força recarregamento limpo
-	    } catch (error) {
-	        console.error("Erro ao sair:", error);
-	        window.location.reload();
-	    }
-	}
+
+        // --- CORREÇÃO DO LOGOUT ---
+        async function logout() { 
+            try {
+                await sbClient.auth.signOut(); 
+                localStorage.clear();
+                window.location.href = window.location.href; 
+            } catch (error) {
+                console.error(error);
+                window.location.reload();
+            }
+        }
 
         async function loadStoreData(userId) {
             let { data: store } = await sbClient.from('estabelecimentos').select('*').eq('dono_id', userId).single();
@@ -467,6 +447,7 @@
                         actions = `<button onclick="updateStatus('${o.id}', 'Preparando')" class="btn-status bg-blue-600 hover:bg-blue-700 w-full justify-center shadow"><i class="fas fa-check"></i> ACEITAR</button>`;
                     } else if (o.status === 'Preparando') {
                         statusColor = "bg-blue-100 text-blue-700 border border-blue-200";
+                        // AQUI ESTÁ O BOTÃO QUE VAI DISPARAR O ZAP
                         actions = `<button onclick="updateStatus('${o.id}', 'Saiu para Entrega')" class="btn-status bg-orange-500 hover:bg-orange-600 w-full justify-center shadow"><i class="fas fa-motorcycle"></i> DESPACHAR</button>`;
                     } else if (o.status === 'Saiu para Entrega') {
                         statusColor = "bg-orange-100 text-orange-700 border border-orange-200";
@@ -485,6 +466,11 @@
                 let addrHtml = `<span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">Retirada</span>`;
                 if(o.endereco) {
                     addrHtml = `<div class="text-xs text-gray-500 bg-gray-50 p-2 rounded mt-2 border border-gray-100"><i class="fas fa-map-marker-alt text-red-400 mr-1"></i> ${o.endereco.rua}, ${o.endereco.bairro} ${o.endereco.comp||''}</div>`;
+                }
+
+                let obsHtml = "";
+                if(o.cliente.obs) {
+                    obsHtml = `<div class="bg-red-50 text-red-600 text-xs p-2 rounded mb-2 font-bold border border-red-100"><i class="fas fa-exclamation-circle mr-1"></i> OBS: ${o.cliente.obs}</div>`;
                 }
 
                 const html = `
@@ -511,6 +497,7 @@
                             </div>
                         </div>
                         ${addrHtml}
+                        ${obsHtml}
                         <ul class="mt-3 mb-4 bg-yellow-50/50 rounded-lg p-3 space-y-1">${itemsHtml}</ul>
                         <div class="pt-2">${actions}</div>
                     </div>
@@ -519,11 +506,29 @@
             });
         }
 
+        // --- ATUALIZAÇÃO DO STATUS COM ZAP ---
         async function updateStatus(id, newStatus) {
             Toastify({ text: `Atualizando...`, style: { background: "#333" }, duration: 1000 }).showToast();
             const { error } = await sbClient.from('pedidos').update({ status: newStatus }).eq('id', id);
-            if(error) alert("Erro: " + error.message);
-            else loadOrders();
+            
+            if(error) {
+                alert("Erro: " + error.message);
+            } else {
+                // SE O NOVO STATUS FOR 'SAIU PARA ENTREGA', MANDA ZAP
+                if (newStatus === 'Saiu para Entrega') {
+                    // Pega o pedido atual na memória
+                    const order = ALL_ORDERS_CACHE.find(o => o.id === id);
+                    if(order) {
+                        const phone = order.cliente.telefone.replace(/\D/g, ''); // Limpa caracteres
+                        const nome = order.cliente.nome.split(' ')[0]; // Primeiro nome
+                        const msg = `Olá ${nome}! Seu pedido #${order.codigo_pedido} saiu para entrega agora mesmo. 🛵😋`;
+                        
+                        // Abre o WhatsApp em nova aba
+                        window.open(`https://wa.me/55${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+                    }
+                }
+                loadOrders();
+            }
         }
 
         function switchTab(tab) {
@@ -564,6 +569,7 @@
             });
         }
         
+        // ... funções de salvar/editar ...
         async function saveSettings(){const btn=document.getElementById('btn-save-cfg');btn.innerText="...";btn.disabled=true;try{const u={nome_fantasia:document.getElementById('cfg-name').value,telefone_whatsapp:document.getElementById('cfg-phone').value,horario_abertura:document.getElementById('cfg-open').value,horario_fechamento:document.getElementById('cfg-close').value,cor_primaria:document.getElementById('cfg-color').value,valor_entrega:document.getElementById('cfg-fee').value,chave_pix:document.getElementById('cfg-pix').value};const f=document.getElementById('cfg-logo-input');if(f.files.length>0){if(f.files[0].size>2097152){alert("Imagem muito grande! Máximo 2MB.");return}const n=`logo_${CURRENT_STORE.id}_${Date.now()}`;await sbClient.storage.from('lojas').upload(n,f.files[0]);const{data}=sbClient.storage.from('lojas').getPublicUrl(n);u.logo_url=data.publicUrl}await sbClient.from('estabelecimentos').update(u).eq('id',CURRENT_STORE.id);Toastify({text:"Salvo!",style:{background:"#16A34A"}}).showToast();loadStoreData(CURRENT_STORE.dono_id)}catch(e){alert(e.message)}finally{btn.innerText="Salvar Alterações";btn.disabled=false}}async function saveProduct(){const btn=document.getElementById('btn-save-prod');btn.innerText="...";btn.disabled=true;try{const id=document.getElementById('prod-id').value;const p={nome:document.getElementById('prod-name').value,preco:document.getElementById('prod-price').value,descricao:document.getElementById('prod-desc').value,ativo:document.getElementById('prod-active').checked,estabelecimento_id:CURRENT_STORE.id,categoria_id:document.getElementById('prod-cat-id').value};const f=document.getElementById('prod-img');if(f.files.length>0){if(f.files[0].size>2097152){alert("Imagem muito grande! Máximo 2MB.");return}const n=`${CURRENT_STORE.id}/${Date.now()}`;await sbClient.storage.from('lojas').upload(n,f.files[0]);const{data}=sbClient.storage.from('lojas').getPublicUrl(n);p.imagem_url=data.publicUrl}if(id)await sbClient.from('produtos').update(p).eq('id',id);else await sbClient.from('produtos').insert([p]);closeModal('modal-prod');loadMenu()}catch(e){alert(e.message)}finally{btn.innerText="Salvar";btn.disabled=false}}async function addCategory(){const n=document.getElementById('new-cat-name').value;if(!n)return;await sbClient.from('categorias').insert([{estabelecimento_id:CURRENT_STORE.id,nome:n,ordem:CURRENT_CATEGORIES.length+1}]);closeModal('modal-cat');loadMenu()}async function deleteCategory(id){if(!confirm("Apagar?"))return;await sbClient.from('produtos').delete().eq('categoria_id',id);await sbClient.from('categorias').delete().eq('id',id);loadMenu()}async function deleteProduct(){if(!confirm("Apagar?"))return;await sbClient.from('produtos').delete().eq('id',document.getElementById('prod-id').value);closeModal('modal-prod');loadMenu()}function openModal(id){document.getElementById(id).classList.remove('hidden')}function closeModal(id){document.getElementById(id).classList.add('hidden')}function openProductModal(p,catId){document.getElementById('modal-prod').classList.remove('hidden');if(p){document.getElementById('prod-id').value=p.id;document.getElementById('prod-cat-id').value=p.categoria_id;document.getElementById('prod-name').value=p.nome;document.getElementById('prod-desc').value=p.descricao||'';document.getElementById('prod-price').value=p.preco;document.getElementById('prod-active').checked=p.ativo;if(p.imagem_url){document.getElementById('preview-img').src=p.imagem_url;document.getElementById('preview-img').classList.remove('hidden')}document.getElementById('btn-delete-prod').classList.remove('hidden')}else{document.getElementById('prod-id').value='';document.getElementById('prod-cat-id').value=catId;document.getElementById('prod-name').value='';document.getElementById('prod-price').value='';document.getElementById('prod-active').checked=true;document.getElementById('preview-img').classList.add('hidden');document.getElementById('btn-delete-prod').classList.add('hidden')}}function handleImagePreview(i){if(i.files&&i.files[0]){if(i.files[0].size>2097152){alert("A imagem deve ter no máximo 2MB!");i.value="";return}const r=new FileReader();r.onload=(e)=>{const m=i.id==='cfg-logo-input'?'cfg-logo-preview':'preview-img';document.getElementById(m).src=e.target.result;document.getElementById(m).classList.remove('hidden');if(m==='cfg-logo-preview')document.getElementById('cfg-logo-icon').classList.add('hidden')};r.readAsDataURL(i.files[0])}}
         checkSession();
     </script>
