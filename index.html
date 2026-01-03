@@ -1,441 +1,163 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZapFlow - O Robô de Vendas do seu Delivery</title>
-    <meta name="description" content="Automatize seus pedidos de Gás, Água e Mercado no WhatsApp. Sem taxas, sem erros.">
-    
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><path d=%22M56 8 L32 52 L48 52 L44 92 L68 48 L52 48 L56 8 Z%22 fill=%22%2310b981%22 stroke=%22white%22 stroke-width=%222%22/></svg>">
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
+    <title>ZapFlow - O Delivery Inteligente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* --- CORE VARIABLES --- */
-        :root {
-            --bg-dark: #0f172a;
-            --bg-card: #1e293b;
-            --primary: #10b981; /* Verde ZapFlow */
-            --primary-glow: rgba(16, 185, 129, 0.4);
-            --accent: #8b5cf6;  /* Roxo Tech */
-            --accent-glow: rgba(139, 92, 246, 0.4);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --gradient: linear-gradient(135deg, #10b981 0%, #8b5cf6 100%);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-main);
-            overflow-x: hidden;
-            line-height: 1.6;
-        }
-
-        h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.02em; }
-
-        /* --- UI ELEMENTS --- */
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-        
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-            padding: 16px 32px; border-radius: 12px;
-            font-weight: 700; text-decoration: none; font-size: 1rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; border: none;
-        }
-        
-        .btn-primary {
-            background: var(--primary); color: #020617;
-            box-shadow: 0 0 25px var(--primary-glow);
-        }
-        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 0 50px var(--primary-glow); filter: brightness(1.1); }
-
-        .btn-outline {
-            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.2); color: var(--text-main);
-        }
-        .btn-outline:hover { border-color: var(--primary); color: var(--primary); background: rgba(16, 185, 129, 0.1); }
-
-        /* --- NAVBAR --- */
-        nav {
-            position: fixed; top: 0; width: 100%; z-index: 100;
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(16px); 
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            padding: 15px 0;
-        }
-        .nav-flex { display: flex; justify-content: space-between; align-items: center; }
-        
-        .logo { 
-            font-size: 1.5rem; font-weight: 700; color: var(--text-main); 
-            display: flex; align-items: center; gap: 10px;
-        }
-        .logo-svg { height: 40px; width: auto; filter: drop-shadow(0 0 8px var(--primary-glow)); }
-
-        /* --- HERO SECTION --- */
-        .hero {
-            padding: 160px 0 100px;
-            text-align: center;
-            background: radial-gradient(circle at 50% -20%, rgba(139, 92, 246, 0.25) 0%, rgba(15, 23, 42, 0) 60%);
-            position: relative;
-        }
-        
-        .hero h1 {
-            font-size: 3.5rem; line-height: 1.1; margin-bottom: 25px;
-            font-weight: 800;
-        }
-        
-        .text-gradient {
-            background: linear-gradient(to right, #ffffff, #cbd5e1);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-        
-        .highlight {
-            color: var(--primary);
-            position: relative;
-            display: inline-block;
-        }
-        
-        .highlight::after {
-            content: ''; position: absolute; bottom: 5px; left: 0; width: 100%; height: 8px;
-            background: var(--primary); opacity: 0.3; z-index: -1; transform: skewX(-15deg);
-        }
-
-        .hero p { font-size: 1.25rem; color: var(--text-muted); max-width: 700px; margin: 0 auto 40px; }
-        
-        .badge {
-            background: rgba(139, 92, 246, 0.15); color: #c4b5fd;
-            padding: 8px 18px; border-radius: 50px; font-size: 0.85rem; font-weight: 600;
-            margin-bottom: 30px; display: inline-block; border: 1px solid rgba(139, 92, 246, 0.3);
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-
-        /* --- MOCKUPS --- */
-        .demo-area { margin-top: 80px; position: relative; }
-        .demo-label {
-            display: inline-block; margin-bottom: 20px; font-size: 0.9rem; color: var(--text-muted);
-            animation: bounce 2s infinite;
-        }
-        @keyframes bounce { 0%, 100% {transform: translateY(0);} 50% {transform: translateY(-5px);} }
-
-        .mockup-container {
-            display: flex; justify-content: center; gap: 30px;
-            perspective: 1000px; flex-wrap: wrap;
-        }
-
-        .phone-mockup {
-            width: 280px; height: 580px;
-            background: #020617; border-radius: 40px; border: 8px solid #334155;
-            position: relative; overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transition: all 0.5s ease;
-        }
-        
-        .phone-mockup.center { 
-            transform: translateY(-40px); 
-            border-color: var(--primary); 
-            box-shadow: 0 0 50px rgba(16, 185, 129, 0.15); 
-            z-index: 10;
-        }
-        .phone-mockup:hover { transform: translateY(-50px) scale(1.02); border-color: var(--accent); }
-
-        /* --- FEATURES --- */
-        .features { padding: 80px 0; background: #0f172a; border-top: 1px solid rgba(255,255,255,0.05); }
-        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 40px; text-align: center; }
-        .feat-item i { font-size: 2.5rem; color: var(--accent); margin-bottom: 20px; display: inline-block; }
-        .feat-item h4 { margin-bottom: 10px; font-size: 1.2rem; }
-        .feat-item p { color: var(--text-muted); font-size: 0.95rem; }
-
-        /* --- PRODUTOS --- */
-        .products { padding: 100px 0; position: relative; }
-        .products::before {
-            content: ''; position: absolute; top: 20%; right: 0; width: 300px; height: 300px;
-            background: var(--primary); filter: blur(150px); opacity: 0.1; z-index: -1;
-        }
-
-        .section-title { text-align: center; margin-bottom: 70px; }
-        .section-title h2 { font-size: 2.8rem; margin-bottom: 15px; }
-        .section-title p { font-size: 1.1rem; color: var(--text-muted); }
-        
-        .grid-products {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-            gap: 30px;
-        }
-
-        .prod-card {
-            background: rgba(30, 41, 59, 0.7); border-radius: 20px; overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.05); transition: 0.4s;
-            display: flex; flex-direction: column;
-            backdrop-filter: blur(10px);
-        }
-        .prod-card:hover { border-color: var(--primary); transform: translateY(-10px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5); }
-
-        .card-header { height: 140px; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; position: relative; overflow: hidden;}
-        .card-header::after { content: ''; position: absolute; width: 100%; height: 100%; background: linear-gradient(180deg, transparent, rgba(30, 41, 59, 1)); bottom: 0; }
-        
-        .card-body { padding: 30px; flex-grow: 1; display: flex; flex-direction: column; }
-        .card-body h3 { font-size: 1.5rem; margin-bottom: 10px; color: #fff; }
-        .card-body p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px; min-height: 60px; }
-
-        .pain-points { margin-bottom: 25px; background: rgba(239, 68, 68, 0.1); padding: 15px; border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.2); }
-        .pain-item { display: flex; align-items: start; gap: 10px; margin-bottom: 8px; font-size: 0.9rem; color: #fca5a5; }
-        
-        .solution-list { margin-bottom: 30px; }
-        .solution-item { display: flex; align-items: start; gap: 10px; font-size: 0.9rem; color: #fff; margin-bottom: 10px; }
-        .solution-item i { color: var(--primary); margin-top: 4px; }
-
-        /* --- ROADMAP --- */
-        .roadmap { padding: 80px 0; background: linear-gradient(180deg, #0f172a 0%, #171d2d 100%); border-top: 1px solid rgba(255,255,255,0.05); }
-        .roadmap-badges { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 30px; }
-        .roadmap-badge {
-            background: rgba(255,255,255,0.05); padding: 10px 20px; border-radius: 8px;
-            font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted);
-            display: flex; align-items: center; gap: 8px;
-        }
-
-        /* --- FOOTER --- */
-        footer { background: #020617; border-top: 1px solid rgba(255,255,255,0.1); padding: 80px 0 40px; }
-        .footer-socials a {
-            color: #94a3b8; font-size: 1.8rem; margin: 0 15px; transition: 0.3s;
-        }
-        .footer-socials a:hover { color: var(--primary); transform: scale(1.2); }
-
-        /* --- FLOAT BUTTON --- */
-        .fab-whatsapp {
-            position: fixed; bottom: 25px; right: 25px;
-            background: #25D366; color: white;
-            width: 60px; height: 60px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 32px; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-            z-index: 1000; transition: 0.3s; text-decoration: none;
-        }
-        .fab-whatsapp:hover { transform: scale(1.1); box-shadow: 0 10px 30px rgba(37, 211, 102, 0.5); }
-        .fab-tooltip {
-            position: absolute; right: 70px; background: white; color: #000;
-            padding: 5px 15px; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
-            white-space: nowrap; opacity: 0; transition: 0.3s; pointer-events: none;
-        }
-        .fab-whatsapp:hover .fab-tooltip { opacity: 1; transform: translateX(-5px); }
-
-        /* --- RESPONSIVO --- */
-        @media (max-width: 768px) {
-            .hero h1 { font-size: 2.2rem; }
-            .mockup-container { flex-direction: column; align-items: center; gap: 50px; margin-top: 40px; }
-            .phone-mockup { height: 500px; width: 260px; }
-            .phone-mockup.center { transform: translateY(0); }
-            .card-header { height: 100px; }
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .hero-bg { background: linear-gradient(135deg, #FFF7ED 0%, #ffffff 100%); }
+        .feature-card:hover { transform: translateY(-5px); }
     </style>
 </head>
-<body>
+<body class="text-gray-800 antialiased">
 
-    <nav>
-        <div class="container nav-flex">
-            <div class="logo">
-                <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="navGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
-                        </linearGradient>
-                    </defs>
-                    <path d="M58 8 L32 54 L50 54 L44 94 L70 48 L54 48 L58 8 Z" fill="url(#navGradient)" stroke="white" stroke-width="2" stroke-linejoin="round"/>
-                </svg>
-                ZapFlow<span style="color: var(--primary);">.</span>
+    <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="bg-orange-600 text-white w-8 h-8 rounded-lg flex items-center justify-center font-bold shadow-lg">Z</div>
+                <span class="font-bold text-xl tracking-tight text-gray-900">ZapFlow</span>
             </div>
-            
-            <a href="https://wa.me/5518991442857" class="btn btn-primary" style="padding: 8px 20px; font-size: 0.9rem;">
-                Contratar Agora <i class="ph ph-arrow-right"></i>
-            </a>
+            <div class="hidden md:flex gap-6 text-sm font-medium text-gray-500">
+                <a href="#recursos" class="hover:text-orange-600 transition">Recursos</a>
+                <a href="#demo" class="hover:text-orange-600 transition">Demonstração</a>
+                <a href="#planos" class="hover:text-orange-600 transition">Planos</a>
+            </div>
+            <div class="flex gap-3">
+                <a href="https://www.usezapflow.com.br/admin.html" class="text-sm font-bold text-gray-600 hover:text-orange-600 py-2 px-4">Login</a>
+                <a href="https://wa.me/5518991442857" class="bg-gray-900 text-white text-sm font-bold px-5 py-2.5 rounded-lg hover:bg-black transition shadow-lg">Começar Agora</a>
+            </div>
         </div>
     </nav>
 
-    <section class="hero">
-        <div class="container">
-            <span class="badge">🚀 Tecnologia para Delivery 2.0</span>
-            <h1>
-                O WhatsApp da sua loja<br>
-                <span class="text-gradient">virou um CAOS?</span>
+    <header class="pt-32 pb-20 px-6 hero-bg">
+        <div class="max-w-4xl mx-auto text-center">
+            <div class="inline-flex items-center gap-2 bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-6 border border-orange-200">
+                <span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span> Nova Tecnologia
+            </div>
+            <h1 class="text-4xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
+                O Delivery que <span class="text-orange-600">vende sozinho</span> pelo WhatsApp.
             </h1>
-            <p>Pare de perder clientes porque demorou para responder. Transforme seu Zap em um <strong>robô de vendas automático</strong> que organiza pedidos, imprime comandas e vende 24h por dia.</p>
-            
-            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                <a href="https://wa.me/5518991442857?text=Quero%20automatizar%20meu%20delivery" class="btn btn-primary">Quero Automatizar Tudo</a>
-                <a href="#demo" class="btn btn-outline">Ver Funcionando</a>
-            </div>
-
-            <div class="demo-area" id="demo">
-                <span class="demo-label">👇 Toque na tela para testar como cliente 👇</span>
-                <div class="mockup-container">
-                    
-                    <div class="phone-mockup">
-                        <iframe src="https://projeto-gas-e-agua.vercel.app/" style="width:100%; height:100%; border:none;"></iframe>
-                    </div>
-                    
-                    <div class="phone-mockup center">
-                        <div style="position: absolute; top:0; width:100%; background:var(--primary); color:#000; font-size:0.7rem; font-weight:bold; text-align:center; padding:4px;">MAIS PROCURADO</div>
-                        <iframe src="https://cardapio-minimercadino.vercel.app/" style="width:100%; height:100%; border:none; margin-top: 20px;"></iframe>
-                    </div>
-                    
-                    <div class="phone-mockup">
-                        <iframe src="https://cardapio-sal-e-doce.vercel.app/" style="width:100%; height:100%; border:none;"></iframe>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="features">
-        <div class="container">
-            <div class="feature-grid">
-                <div class="feat-item">
-                    <i class="ph ph-lightning"></i>
-                    <h4>Ultra Rápido</h4>
-                    <p>Sem downloads. Seu cliente clica no link e o cardápio abre na hora, mesmo no 3G.</p>
-                </div>
-                <div class="feat-item">
-                    <i class="ph ph-whatsapp-logo"></i>
-                    <h4>Pedido Formatado</h4>
-                    <p>O pedido chega no seu Zap pronto para imprimir ou copiar. Adeus erros de leitura.</p>
-                </div>
-                <div class="feat-item">
-                    <i class="ph ph-currency-dollar-slash"></i>
-                    <h4>Sem Taxas por Venda</h4>
-                    <p>O lucro é 100% seu. Diferente dos apps famosos, não cobramos % sobre pedidos.</p>
-                </div>
-                <div class="feat-item">
-                    <i class="ph ph-robot"></i>
-                    <h4>Venda Automática</h4>
-                    <p>Atenda 10 clientes ao mesmo tempo sem ficar louco digitando no celular.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="produtos" class="products">
-        <div class="container">
-            <div class="section-title">
-                <h2>Soluções por Nicho</h2>
-                <p>Nós entendemos exatamente onde o seu negócio perde dinheiro.</p>
-            </div>
-
-            <div class="grid-products">
-                
-                <div class="prod-card">
-                    <div class="card-header" style="background: linear-gradient(45deg, #2563eb, #1e40af);">💧</div>
-                    <div class="card-body">
-                        <h3>Depósitos de Gás & Água</h3>
-                        <p>Focado em reincidência. Ideal para clientes que pedem toda semana.</p>
-                        
-                        <div class="pain-points">
-                            <div class="pain-item"><i class="ph ph-warning-circle"></i> Telefone ocupado = Venda perdida</div>
-                            <div class="pain-item"><i class="ph ph-warning-circle"></i> Motoqueiro erra o endereço</div>
-                        </div>
-
-                        <div class="solution-list">
-                            <div class="solution-item"><i class="ph ph-check-circle"></i> Localização via GPS automática</div>
-                            <div class="solution-item"><i class="ph ph-check-circle"></i> Seleção de Troco obrigatória</div>
-                        </div>
-                        
-                        <a href="https://projeto-gas-e-agua.vercel.app/" target="_blank" class="btn btn-outline" style="width:100%; margin-top:auto;">Ver Demo</a>
-                    </div>
-                </div>
-
-                <div class="prod-card" style="border-color: var(--primary);">
-                    <div class="card-header" style="background: linear-gradient(45deg, #d97706, #b45309);">🛒</div>
-                    <div class="card-body">
-                        <h3>Mini Mercados</h3>
-                        <p>O catálogo visual que aumenta o ticket médio da sua conveniência.</p>
-                        
-                        <div class="pain-points">
-                            <div class="pain-item"><i class="ph ph-warning-circle"></i> "Tem Skol?" (perguntado 50x/dia)</div>
-                            <div class="pain-item"><i class="ph ph-warning-circle"></i> Dificuldade em informar preços</div>
-                        </div>
-
-                        <div class="solution-list">
-                            <div class="solution-item"><i class="ph ph-check-circle"></i> Busca rápida de produtos</div>
-                            <div class="solution-item"><i class="ph ph-check-circle"></i> Fotos que dão sede/fome</div>
-                        </div>
-                        
-                        <a href="https://cardapio-minimercadino.vercel.app/" target="_blank" class="btn btn-primary" style="width:100%; margin-top:auto;">Ver Demo</a>
-                    </div>
-                </div>
-
-                <div class="prod-card">
-                    <div class="card-header" style="background: linear-gradient(45deg, #dc2626, #991b1b);">🍽️</div>
-                    <div class="card-body">
-                        <h3>Marmitarias & Rotisserias</h3>
-                        <p>Organize o caos do horário de almoço. Cozinha feliz, cliente feliz.</p>
-                        
-                        <div class="pain-points">
-                            <div class="pain-item"><i class="ph ph-warning-circle"></i> Pedidos errados (sem cebola, etc)</div>
-                            <div class="pain-item"><i class="ph ph-warning-circle"></i> Atraso na resposta ao meio-dia</div>
-                        </div>
-
-                        <div class="solution-list">
-                            <div class="solution-item"><i class="ph ph-check-circle"></i> Observações obrigatórias</div>
-                            <div class="solution-item"><i class="ph ph-check-circle"></i> Trava de horário de funcionamento</div>
-                        </div>
-                        
-                        <a href="https://cardapio-sal-e-doce.vercel.app/" target="_blank" class="btn btn-outline" style="width:100%; margin-top:auto;">Ver Demo</a>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <section class="roadmap">
-        <div class="container" style="text-align: center;">
-            <h3 style="margin-bottom: 20px;">🚧 Roadmap de Evolução</h3>
-            <p style="max-width: 600px; margin: 0 auto 10px; color: var(--text-muted);">
-                Quem entra no ZapFlow hoje garante acesso prioritário às tecnologias que estamos desenvolvendo:
+            <p class="text-lg text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+                Pare de pagar taxas abusivas. Tenha seu próprio aplicativo de pedidos, imprima na cozinha e avise seu cliente automaticamente.
             </p>
-            <div class="roadmap-badges">
-                <div class="roadmap-badge"><i class="ph ph-chart-line-up"></i> Gestão Financeira</div>
-                <div class="roadmap-badge"><i class="ph ph-moped"></i> App do Entregador</div>
-                <div class="roadmap-badge"><i class="ph ph-package"></i> Controle de Estoque Avançado</div>
-            </div>
-        </div>
-    </section>
-
-    <section style="padding: 100px 0; text-align: center;">
-        <div class="container">
-            <h2 style="font-size: 2.5rem; margin-bottom: 30px;">Chega de anotar pedido em papel.</h2>
-            <a href="https://wa.me/5518991442857?text=Ola,%20vi%20o%20site%20ZapFlow%20e%20quero%20testar" class="btn btn-primary" style="font-size: 1.2rem; padding: 20px 50px;">
-                Quero meu Site ZapFlow Agora
-            </a>
-            <p style="margin-top: 20px; font-size: 0.9rem; color: var(--text-muted);">Entrega em até 24h • Suporte via WhatsApp</p>
-        </div>
-    </section>
-
-    <footer>
-        <div class="container" style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
             
-            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; color: #fff;">
-                ZapFlow<span style="color: var(--primary);">.</span>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="https://wa.me/5518991442857?text=Quero%20conhecer%20o%20ZapFlow" class="w-full sm:w-auto bg-orange-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-orange-700 transition shadow-xl shadow-orange-500/20 flex items-center justify-center gap-3">
+                    <i class="fab fa-whatsapp text-2xl"></i> Criar meu Cardápio
+                </a>
+                <a href="https://www.usezapflow.com.br/cliente/gas-fiel" target="_blank" class="w-full sm:w-auto bg-white text-gray-700 border border-gray-200 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition flex items-center justify-center gap-2">
+                    <i class="fas fa-mobile-alt text-gray-400"></i> Ver Modelo Real
+                </a>
             </div>
-
-            <div class="footer-socials">
-                <a href="https://instagram.com/usezapflow" target="_blank"><i class="ph ph-instagram-logo"></i></a>
-                <a href="https://facebook.com/usezapflow" target="_blank"><i class="ph ph-facebook-logo"></i></a>
-                <a href="https://wa.me/5518991442857" target="_blank"><i class="ph ph-whatsapp-logo"></i></a>
-            </div>
-
-            <p style="color: #64748b; font-size: 0.9rem; margin-top: 20px; text-align: center;">
-                &copy; 2026 ZapFlow Tecnologia.<br>
-                Feito em Andradina-SP para o Brasil. 🚀
+            <p class="text-xs text-gray-400 mt-6 flex justify-center gap-6">
+                <span><i class="fas fa-check text-green-500 mr-1"></i> Sem instalação</span>
+                <span><i class="fas fa-check text-green-500 mr-1"></i> Setup imediato</span>
+                <span><i class="fas fa-check text-green-500 mr-1"></i> Cancela quando quiser</span>
             </p>
+        </div>
+    </header>
+
+    <section id="recursos" class="py-24 bg-white">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-extrabold text-gray-900">Tudo que você precisa pra crescer</h2>
+                <p class="text-gray-500 mt-4">Desenvolvido pensando na agilidade do balcão e da cozinha.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="feature-card p-8 rounded-3xl bg-gray-50 border border-gray-100 transition duration-300">
+                    <div class="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mb-6">
+                        <i class="fab fa-whatsapp text-green-600 text-3xl"></i>
+                    </div>
+                    <h3 class="font-bold text-xl mb-3 text-gray-900">Automação de Status</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">
+                        Não perca tempo digitando. Ao clicar em <b>"Saiu para Entrega"</b>, o sistema abre o WhatsApp do cliente com a mensagem pronta.
+                    </p>
+                </div>
+
+                <div class="feature-card p-8 rounded-3xl bg-gray-50 border border-gray-100 transition duration-300">
+                    <div class="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center mb-6">
+                        <i class="fas fa-palette text-purple-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-xl mb-3 text-gray-900">Sua Marca, Suas Regras</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">
+                        O cardápio fica com a <b>Sua Cor</b> e a <b>Sua Logo</b>. Fortaleça sua marca própria e pare de ser apenas mais um dentro dos apps.
+                    </p>
+                </div>
+
+                <div class="feature-card p-8 rounded-3xl bg-gray-50 border border-gray-100 transition duration-300">
+                    <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mb-6">
+                        <i class="fas fa-print text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-xl mb-3 text-gray-900">Impressão Térmica</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">
+                        Chega de escrever pedido na mão. O ZapFlow gera o <b>Cupom Não Fiscal</b> pronto para impressoras térmicas (58mm e 80mm).
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="demo" class="py-20 bg-gray-900 text-white overflow-hidden relative">
+        <div class="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+        
+        <div class="max-w-6xl mx-auto px-6 relative z-10 flex flex-col md:flex-row items-center gap-16">
+            <div class="flex-1 space-y-8">
+                <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">
+                    O sistema mais <span class="text-orange-500">leve</span> do mercado.
+                </h2>
+                <div class="space-y-4">
+                    <div class="flex items-start gap-4">
+                        <div class="bg-gray-800 p-2 rounded-lg"><i class="fas fa-bolt text-yellow-400"></i></div>
+                        <div>
+                            <h4 class="font-bold text-lg">Carregamento Instantâneo</h4>
+                            <p class="text-gray-400 text-sm">Seu cliente não gasta dados. O cardápio abre mesmo no 3G.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="bg-gray-800 p-2 rounded-lg"><i class="fas fa-coins text-green-400"></i></div>
+                        <div>
+                            <h4 class="font-bold text-lg">Livre de Comissões</h4>
+                            <p class="text-gray-400 text-sm">O lucro é 100% seu. Não cobramos por pedido.</p>
+                        </div>
+                    </div>
+                </div>
+                <a href="https://www.usezapflow.com.br/cliente/gas-fiel" target="_blank" class="inline-block border-b-2 border-orange-500 pb-1 hover:text-orange-500 transition cursor-pointer">
+                    Testar como um cliente real <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+            
+            <div class="flex-1 relative flex justify-center">
+                <div class="relative bg-gray-800 rounded-[2.5rem] border-[8px] border-gray-800 shadow-2xl h-[600px] w-[320px] overflow-hidden">
+                    <iframe src="https://www.usezapflow.com.br/cliente/gas-fiel" class="w-full h-full bg-white" style="border:none;"></iframe>
+                    <div class="absolute top-0 right-0 w-full h-full bg-gradient-to-tr from-transparent to-white/10 pointer-events-none"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-white border-t border-gray-100 py-12">
+        <div class="max-w-6xl mx-auto px-6 flex flex-col justify-center items-center gap-6">
+            
+            <div class="text-center">
+                <span class="font-black text-xl tracking-tight text-gray-900">ZapFlow</span>
+                <p class="text-gray-400 text-xs mt-2">Tecnologia para Delivery Simples e Eficiente.</p>
+            </div>
+            
+            <div class="flex gap-6">
+                <a href="https://www.instagram.com/usezapflow" target="_blank" class="text-gray-400 hover:text-orange-600 transition"><i class="fab fa-instagram text-2xl"></i></a>
+                <a href="https://www.facebook.com/share/1KkTnUERrc/" target="_blank" class="text-gray-400 hover:text-orange-600 transition"><i class="fab fa-facebook text-2xl"></i></a>
+            </div>
+
+            <div class="text-center mt-4 text-gray-300 text-[10px]">
+                &copy; 2026 ZapFlow. Todos os direitos reservados.
+            </div>
         </div>
     </footer>
-
-    <a href="https://wa.me/5518991442857?text=Ola,%20vim%20pelo%20site%20e%20quero%20saber%20mais" class="fab-whatsapp" target="_blank">
-        <span class="fab-tooltip">Fale Conosco</span>
-        <i class="ph ph-whatsapp-logo"></i>
-    </a>
 
 </body>
 </html>
