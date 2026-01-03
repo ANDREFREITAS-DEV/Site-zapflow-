@@ -491,7 +491,7 @@
 
         // 5. Gera o Link e Monta a Mensagem do WhatsApp
         const baseUrl = window.location.origin; // Pega o endereço do site atual
-        const linkRecibo = `${baseUrl}/cliente/gas-fiel/pedido?id=${data.id}`;
+        const linkRecibo = `${baseUrl}/cliente/${LOJA_SLUG}/pedido?id=${data.id}`;
 	
 
         let msg = `*NOVO PEDIDO #${data.codigo_pedido}* 📄\n`;
