@@ -238,18 +238,32 @@
             renderMenu(cats||[], prods||[]);
         }
 
-        function renderMenu(cats, prods) {
-            const list = document.getElementById('categories-list');
-            list.innerHTML = "";
-            if(cats.length===0) { list.innerHTML="<p>Sem categorias.</p>"; return; }
-            
-            cats.forEach(cat => {
-                const catProds = prods.filter(p => p.categoria_id === cat.id);
-                let html = `<div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-4">
-                    <div class="flex justify-between items-center mb-3 border-b pb-2">
-                        <h3 class="font-bold text-gray-800">${cat.nome}</h3>
-                        <button onclick="openProductModal(null, '${cat.id}')" class="text-xs text-orange-600 font-bold">+ Produto</button>
-                    </div>`;
+        // VERSÃO ATUALIZADA COM BOTÃO DE EXCLUIR CATEGORIA
+	function renderMenu(cats, prods) {
+    		const list = document.getElementById('categories-list');
+    		list.innerHTML = "";
+    
+    		if(cats.length === 0) { 
+     			   list.innerHTML="<p class='text-gray-400'>Sem categorias.</p>"; 
+    		    return; 
+  		  }
+    
+   	 cats.forEach(cat => {
+        const catProds = prods.filter(p => p.categoria_id === cat.id);
+        
+        let html = `
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-4">
+            <div class="flex justify-between items-center mb-3 border-b pb-2">
+                <div class="flex items-center gap-3">
+                    <h3 class="font-bold text-gray-800">${cat.nome}</h3>
+                    <button onclick="deleteCategory('${cat.id}')" class="text-gray-300 hover:text-red-500 text-xs" title="Excluir Categoria">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <button onclick="openProductModal(null, '${cat.id}')" class="text-xs text-orange-600 font-bold">+ Produto</button>
+            </div>`;
+        
+        // ... (resto do código de renderizar produtos continua igual) ...
                 
                 catProds.forEach(p => {
                     const status = p.ativo ? 'bg-green-500' : 'bg-red-500';
@@ -346,6 +360,24 @@
             await sbClient.from('produtos').delete().eq('id', document.getElementById('prod-id').value);
             closeModal('modal-prod'); loadMenu();
         }
+
+
+		// NOVA FUNÇÃO PARA EXCLUIR CATEGORIA
+	async function deleteCategory(id) {
+    		if(!confirm("CUIDADO: Isso vai apagar a categoria e TODOS os produtos dentro dela.\n\nTem certeza?")) return;
+    
+    	// Primeiro apaga os produtos dessa categoria (pra não dar erro de vínculo)
+    		await sbClient.from('produtos').delete().eq('categoria_id', id);
+   	 
+    	// Depois apaga a categoria
+    		const { error } = await sbClient.from('categorias').delete().eq('id', id);
+    
+    	if(error) alert("Erro ao excluir: " + error.message);
+    		else {
+        Toastify({ text: "Categoria Excluída!", style: { background: "#EF4444" } }).showToast();
+        loadMenu(); // Recarrega a tela
+    	}
+	}
 
         // UTILS
         function switchTab(tab) {
