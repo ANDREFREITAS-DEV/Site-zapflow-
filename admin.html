@@ -15,27 +15,20 @@
     <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
         <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
             <h2 class="text-2xl font-bold text-gray-800 text-center mb-2">Área do Cliente</h2>
-            <p class="text-gray-500 text-center mb-6 text-sm">Entre com os dados criados no Supabase</p>
-            
-            <input type="email" id="email" placeholder="Seu E-mail" class="w-full p-3 mb-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-            <input type="password" id="password" placeholder="Sua Senha" class="w-full p-3 mb-6 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-            
+            <p class="text-gray-500 text-center mb-6 text-sm">Entre com seus dados de acesso</p>
+            <input type="email" id="email" placeholder="Seu E-mail" class="w-full p-3 mb-3 border rounded-lg">
+            <input type="password" id="password" placeholder="Sua Senha" class="w-full p-3 mb-6 border rounded-lg">
             <button onclick="handleLogin()" id="btn-login" class="w-full bg-orange-600 text-white font-bold py-3 rounded-lg hover:bg-orange-700 transition">Entrar</button>
-            <p class="mt-4 text-center text-xs text-gray-400">Problemas? Verifique seu usuário no painel do Supabase.</p>
         </div>
     </div>
 
     <div id="setup-screen" class="hidden min-h-screen flex items-center justify-center p-4">
         <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md text-center">
             <i class="fas fa-store text-6xl text-orange-200 mb-4"></i>
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">Bem-vindo(a)!</h2>
-            <p class="text-gray-600 mb-6">Você ainda não tem uma loja configurada. Vamos criar agora?</p>
-            
-            <input type="text" id="new-store-name" placeholder="Nome do Estabelecimento (Ex: Gás Fiel)" class="w-full p-3 mb-3 border rounded-lg">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Criar Nova Loja</h2>
+            <input type="text" id="new-store-name" placeholder="Nome do Estabelecimento" class="w-full p-3 mb-3 border rounded-lg">
             <input type="text" id="new-store-slug" placeholder="Link da loja (Ex: gas-fiel)" class="w-full p-3 mb-4 border rounded-lg bg-gray-50">
-            <p class="text-xs text-left text-gray-400 mb-4">*Isso definirá seu link: usezapflow.com.br/gas-fiel</p>
-
-            <button onclick="createStore()" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition">Criar Loja e Começar</button>
+            <button onclick="createStore()" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition">Criar Loja</button>
         </div>
     </div>
 
@@ -43,7 +36,7 @@
         <header class="bg-white shadow-sm sticky top-0 z-20">
             <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
                 <div>
-                    <h1 class="font-bold text-gray-800 text-lg" id="dash-store-name">Carregando...</h1>
+                    <h1 class="font-bold text-gray-800 text-lg" id="dash-store-name">...</h1>
                     <p class="text-xs text-green-600 font-bold"><i class="fas fa-circle text-[8px]"></i> Online</p>
                 </div>
                 <button onclick="logout()" class="text-gray-400 hover:text-red-500"><i class="fas fa-sign-out-alt text-xl"></i></button>
@@ -55,18 +48,29 @@
         </header>
 
         <main class="max-w-5xl mx-auto p-4">
+            
             <div id="content-menu" class="space-y-6">
                 <div class="flex justify-between items-end mb-4">
                     <h2 class="text-lg font-bold text-gray-700">Categorias</h2>
                     <button onclick="openModal('modal-cat')" class="text-xs bg-gray-900 text-white px-3 py-2 rounded-lg hover:bg-black transition"><i class="fas fa-plus"></i> Nova Aba</button>
                 </div>
-                <div id="categories-list" class="space-y-4">
-                    <p class="text-center text-gray-400 py-10">Carregando cardápio...</p>
-                </div>
+                <div id="categories-list" class="space-y-4 text-center text-gray-400 py-10">Carregando...</div>
             </div>
 
             <div id="content-config" class="hidden space-y-6 max-w-lg mx-auto bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                 <h3 class="font-bold text-gray-800 border-b pb-2 mb-4">Dados da Loja</h3>
+                
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden border border-gray-200 relative">
+                        <img id="cfg-logo-preview" class="w-full h-full object-cover hidden">
+                        <i id="cfg-logo-icon" class="fas fa-store text-gray-400 text-2xl"></i>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">Logo da Loja</label>
+                        <input type="file" id="cfg-logo-input" accept="image/*" class="text-xs text-gray-500">
+                    </div>
+                </div>
+
                 <div>
                     <label class="block text-xs font-bold text-gray-500 mb-1">Nome Fantasia</label>
                     <input type="text" id="cfg-name" class="w-full p-2 border rounded bg-gray-50">
@@ -75,6 +79,7 @@
                     <label class="block text-xs font-bold text-gray-500 mb-1">Whatsapp (apenas números)</label>
                     <input type="text" id="cfg-phone" class="w-full p-2 border rounded bg-gray-50">
                 </div>
+                
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-gray-500 mb-1">Abre às</label>
@@ -85,74 +90,72 @@
                         <input type="time" id="cfg-close" class="w-full p-2 border rounded bg-gray-50">
                     </div>
                 </div>
+
+                <div class="border-t pt-4 mt-2">
+                    <h4 class="font-bold text-gray-800 mb-3 text-sm">Financeiro & Entrega</h4>
+                    <div class="mb-3">
+                        <label class="block text-xs font-bold text-gray-500 mb-1">Taxa de Entrega (R$)</label>
+                        <input type="number" id="cfg-fee" step="0.50" class="w-full p-2 border rounded bg-gray-50" placeholder="0.00">
+                    </div>
+                    <div class="mb-3">
+                        <label class="block text-xs font-bold text-gray-500 mb-1">Chave PIX (CPF/CNPJ/Email/Aleatória)</label>
+                        <input type="text" id="cfg-pix" class="w-full p-2 border rounded bg-gray-50" placeholder="Ex: 123.456.789-00">
+                    </div>
+                </div>
+
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">Cor Primária (Hex)</label>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">Cor do Tema</label>
                     <div class="flex gap-2">
                         <input type="color" id="cfg-color-picker" class="h-10 w-10 p-0 border-0" onchange="document.getElementById('cfg-color').value = this.value">
                         <input type="text" id="cfg-color" class="w-full p-2 border rounded bg-gray-50">
                     </div>
                 </div>
-                <button onclick="saveSettings()" class="w-full bg-orange-600 text-white font-bold py-3 rounded-lg mt-4">Salvar Alterações</button>
+
+                <button onclick="saveSettings()" id="btn-save-cfg" class="w-full bg-orange-600 text-white font-bold py-3 rounded-lg mt-4">Salvar Configurações</button>
             </div>
         </main>
     </div>
 
     <div id="modal-cat" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl p-6 w-full max-w-sm relative">
+        <div class="bg-white rounded-xl p-6 w-full max-w-sm">
             <h3 class="font-bold text-lg mb-4">Nova Categoria</h3>
-            <input type="text" id="new-cat-name" placeholder="Ex: Bebidas, Promoções..." class="w-full p-3 border rounded-lg mb-4">
-            <div class="flex gap-2">
-                <button onclick="closeModal('modal-cat')" class="flex-1 py-3 text-gray-500 font-bold bg-gray-100 rounded-lg">Cancelar</button>
-                <button onclick="addCategory()" class="flex-1 py-3 bg-orange-600 text-white font-bold rounded-lg">Criar</button>
-            </div>
+            <input type="text" id="new-cat-name" placeholder="Nome" class="w-full p-3 border rounded-lg mb-4">
+            <div class="flex gap-2"><button onclick="closeModal('modal-cat')" class="flex-1 py-3 bg-gray-100 rounded-lg">Cancelar</button><button onclick="addCategory()" class="flex-1 py-3 bg-orange-600 text-white rounded-lg">Criar</button></div>
         </div>
     </div>
 
     <div id="modal-prod" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-white rounded-xl p-6 w-full max-w-md relative my-auto">
-            <h3 class="font-bold text-lg mb-4">Gerenciar Produto</h3>
-            <input type="hidden" id="prod-id">
-            <input type="hidden" id="prod-cat-id">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md my-auto">
+            <h3 class="font-bold text-lg mb-4">Produto</h3>
+            <input type="hidden" id="prod-id"><input type="hidden" id="prod-cat-id">
             <div class="mb-4 text-center">
                 <div class="w-32 h-32 bg-gray-100 mx-auto rounded-lg flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-300 relative group">
                     <img id="preview-img" class="w-full h-full object-cover hidden">
-                    <div id="upload-placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
-                        <i class="fas fa-camera text-2xl"></i><span class="text-xs mt-1">Clique para alterar</span>
-                    </div>
+                    <div id="upload-placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400"><i class="fas fa-camera text-2xl"></i></div>
                     <input type="file" id="prod-img" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="handleImagePreview(this)">
                 </div>
-                <p class="text-xs text-gray-400 mt-2">Max 2MB (JPG/PNG)</p>
             </div>
-            <input type="text" id="prod-name" placeholder="Nome do Produto" class="w-full p-3 border rounded-lg mb-3">
-            <textarea id="prod-desc" placeholder="Descrição curta" class="w-full p-3 border rounded-lg mb-3 h-20 resize-none"></textarea>
+            <input type="text" id="prod-name" placeholder="Nome" class="w-full p-3 border rounded-lg mb-3">
+            <textarea id="prod-desc" placeholder="Descrição" class="w-full p-3 border rounded-lg mb-3 h-20 resize-none"></textarea>
             <div class="flex gap-3 mb-4">
-                <div class="w-1/2">
-                    <label class="text-xs font-bold text-gray-500">Preço (R$)</label>
-                    <input type="number" id="prod-price" placeholder="0.00" step="0.01" class="w-full p-3 border rounded-lg">
-                </div>
-                <div class="w-1/2 flex items-center justify-between px-3 border rounded-lg bg-gray-50">
-                    <label class="text-xs font-bold text-gray-500">Ativo?</label>
-                    <input type="checkbox" id="prod-active" checked class="w-5 h-5 text-orange-600 rounded">
-                </div>
+                <input type="number" id="prod-price" placeholder="Preço" step="0.01" class="w-full p-3 border rounded-lg">
+                <div class="flex items-center px-3 border rounded-lg bg-gray-50"><label class="mr-2 text-xs">Ativo</label><input type="checkbox" id="prod-active" checked></div>
             </div>
-            <div class="flex gap-2">
-                <button onclick="closeModal('modal-prod')" class="flex-1 py-3 text-gray-500 font-bold bg-gray-100 rounded-lg">Cancelar</button>
-                <button onclick="saveProduct()" id="btn-save-prod" class="flex-1 py-3 bg-green-600 text-white font-bold rounded-lg">Salvar</button>
-            </div>
-            <button onclick="deleteProduct()" id="btn-delete-prod" class="w-full mt-3 py-2 text-red-500 text-sm font-bold hidden">Excluir Produto</button>
+            <div class="flex gap-2"><button onclick="closeModal('modal-prod')" class="flex-1 py-3 bg-gray-100 rounded-lg">Cancelar</button><button onclick="saveProduct()" id="btn-save-prod" class="flex-1 py-3 bg-green-600 text-white rounded-lg">Salvar</button></div>
+            <button onclick="deleteProduct()" id="btn-delete-prod" class="w-full mt-3 text-red-500 text-sm font-bold hidden">Excluir</button>
         </div>
     </div>
 
     <script>
-        // --- SUAS CHAVES DO SUPABASE (JÁ INSERIDAS) ---
+        // CONFIG SUPABASE
         const SUPABASE_URL = 'https://axfyfeexmdkcmhgtqelc.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_gQPdtNGsVQWq6YUgz0Wgqw_GLrxVgxM'; 
-        
         const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
         let CURRENT_STORE = null;
         let CURRENT_CATEGORIES = [];
 
-        // --- LOGIN ---
+        // LOGIN SYSTEM
         async function checkSession() {
             const { data: { session } } = await sbClient.auth.getSession();
             if (session) {
@@ -162,259 +165,238 @@
                 document.getElementById('login-screen').classList.remove('hidden');
             }
         }
-
         async function handleLogin() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const btn = document.getElementById('btn-login');
-
-            if(!email || !password) return alert("Preencha email e senha.");
-
-            btn.innerText = "Entrando...";
-            btn.disabled = true;
-            
-            const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
-            
-            if (error) {
-                alert('Erro ao entrar: ' + error.message + '\nVerifique se criou o usuário no Supabase.');
-                btn.innerText = "Entrar";
-                btn.disabled = false;
-            } else {
-                checkSession();
-            }
+            btn.innerText = "Entrando..."; btn.disabled = true;
+            const { error } = await sbClient.auth.signInWithPassword({ email, password });
+            if (error) { alert('Erro: ' + error.message); btn.innerText = "Entrar"; btn.disabled = false; }
+            else checkSession();
         }
+        async function logout() { await sbClient.auth.signOut(); window.location.reload(); }
 
-        async function logout() {
-            await sbClient.auth.signOut();
-            window.location.reload();
-        }
-
-        // --- CARREGAR LOJA ---
+        // DATA LOADING
         async function loadStoreData(userId) {
-            let { data: store, error } = await sbClient
-                .from('estabelecimentos')
-                .select('*')
-                .eq('dono_id', userId)
-                .single();
-
+            let { data: store } = await sbClient.from('estabelecimentos').select('*').eq('dono_id', userId).single();
             if (!store) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('setup-screen').classList.remove('hidden');
                 return;
             }
-
             CURRENT_STORE = store;
             initDashboard();
         }
 
         async function createStore() {
             const name = document.getElementById('new-store-name').value;
-            const slugInput = document.getElementById('new-store-slug').value;
+            const slug = document.getElementById('new-store-slug').value.toLowerCase().trim().replace(/\s+/g, '-');
             const { data: { user } } = await sbClient.auth.getUser();
-
-            if(!name || !slugInput) return alert("Preencha o nome e o link!");
-
-            const cleanSlug = slugInput.toLowerCase().trim().replace(/\s+/g, '-');
-
-            const { data, error } = await sbClient.from('estabelecimentos').insert([
-                { 
-                    dono_id: user.id,
-                    slug: cleanSlug,
-                    nome_fantasia: name,
-                    telefone_whatsapp: '5518999999999', // Num padrão
-                    horario_abertura: '08:00',
-                    horario_fechamento: '18:00'
-                }
-            ]).select().single();
-
-            if(error) {
-                if(error.code === '23505') alert("Este link (slug) já existe. Escolha outro.");
-                else alert("Erro: " + error.message);
-            } else {
-                document.getElementById('setup-screen').classList.add('hidden');
-                CURRENT_STORE = data;
-                initDashboard();
-            }
+            if(!name || !slug) return alert("Preencha tudo!");
+            
+            const { data, error } = await sbClient.from('estabelecimentos').insert([{ 
+                dono_id: user.id, slug, nome_fantasia: name, telefone_whatsapp: '550000000000',
+                horario_abertura: '08:00', horario_fechamento: '18:00', valor_entrega: 5.00
+            }]).select().single();
+            
+            if(error) alert("Erro: " + error.message);
+            else { document.getElementById('setup-screen').classList.add('hidden'); CURRENT_STORE = data; initDashboard(); }
         }
 
         function initDashboard() {
             document.getElementById('dashboard').classList.remove('hidden');
             document.getElementById('dash-store-name').innerText = CURRENT_STORE.nome_fantasia;
             
+            // Popula Configurações
             document.getElementById('cfg-name').value = CURRENT_STORE.nome_fantasia;
             document.getElementById('cfg-phone').value = CURRENT_STORE.telefone_whatsapp;
             document.getElementById('cfg-open').value = CURRENT_STORE.horario_abertura;
             document.getElementById('cfg-close').value = CURRENT_STORE.horario_fechamento;
             document.getElementById('cfg-color').value = CURRENT_STORE.cor_primaria || '#F97316';
             document.getElementById('cfg-color-picker').value = CURRENT_STORE.cor_primaria || '#F97316';
+            
+            // Novos Campos
+            document.getElementById('cfg-fee').value = CURRENT_STORE.valor_entrega || 0;
+            document.getElementById('cfg-pix').value = CURRENT_STORE.chave_pix || '';
+
+            // Logo Preview
+            if(CURRENT_STORE.logo_url) {
+                document.getElementById('cfg-logo-preview').src = CURRENT_STORE.logo_url;
+                document.getElementById('cfg-logo-preview').classList.remove('hidden');
+                document.getElementById('cfg-logo-icon').classList.add('hidden');
+            }
 
             loadMenu();
         }
 
-        // --- MENU ---
         async function loadMenu() {
             const list = document.getElementById('categories-list');
-            list.innerHTML = '<p class="text-center text-gray-400">Atualizando...</p>';
-
-            const { data: cats } = await sbClient
-                .from('categorias')
-                .select('*')
-                .eq('estabelecimento_id', CURRENT_STORE.id)
-                .order('ordem', { ascending: true });
-
+            list.innerHTML = '...';
+            const { data: cats } = await sbClient.from('categorias').select('*').eq('estabelecimento_id', CURRENT_STORE.id).order('ordem', {ascending: true});
             CURRENT_CATEGORIES = cats || [];
-
-            const { data: prods } = await sbClient
-                .from('produtos')
-                .select('*')
-                .eq('estabelecimento_id', CURRENT_STORE.id)
-                .order('nome');
-
-            renderMenu(cats || [], prods || []);
+            const { data: prods } = await sbClient.from('produtos').select('*').eq('estabelecimento_id', CURRENT_STORE.id).order('nome');
+            renderMenu(cats||[], prods||[]);
         }
 
         function renderMenu(cats, prods) {
             const list = document.getElementById('categories-list');
             list.innerHTML = "";
-
-            if(cats.length === 0) {
-                list.innerHTML = `<div class="text-center p-8 bg-white rounded-xl border border-dashed border-gray-300"><p class="text-gray-500">Seu cardápio está vazio.</p></div>`;
-                return;
-            }
-
+            if(cats.length===0) { list.innerHTML="<p>Sem categorias.</p>"; return; }
+            
             cats.forEach(cat => {
                 const catProds = prods.filter(p => p.categoria_id === cat.id);
-                let prodHtml = "";
+                let html = `<div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-4">
+                    <div class="flex justify-between items-center mb-3 border-b pb-2">
+                        <h3 class="font-bold text-gray-800">${cat.nome}</h3>
+                        <button onclick="openProductModal(null, '${cat.id}')" class="text-xs text-orange-600 font-bold">+ Produto</button>
+                    </div>`;
                 
                 catProds.forEach(p => {
-                    const statusDot = p.ativo ? '<span class="w-2 h-2 rounded-full bg-green-500 inline-block mr-1"></span>' : '<span class="w-2 h-2 rounded-full bg-red-300 inline-block mr-1"></span>';
-                    prodHtml += `
-                        <div onclick='openProductModal(${JSON.stringify(p)})' class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100 cursor-pointer hover:bg-orange-50 transition">
-                            <img src="${p.imagem_url || 'https://placehold.co/100'}" class="w-12 h-12 rounded object-cover bg-gray-200">
-                            <div class="flex-1">
-                                <p class="font-bold text-gray-700 text-sm">${p.nome}</p>
-                                <p class="text-xs text-gray-500">${statusDot} R$ ${p.preco}</p>
-                            </div>
-                            <i class="fas fa-chevron-right text-gray-300"></i>
-                        </div>`;
-                });
-
-                const html = `
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                        <div class="flex justify-between items-center mb-3 pb-2 border-b border-gray-50">
-                            <h3 class="font-bold text-gray-800">${cat.nome} <span class="text-xs font-normal text-gray-400">(${catProds.length} itens)</span></h3>
-                            <button onclick="openProductModal(null, '${cat.id}')" class="text-xs text-orange-600 font-bold hover:underline">+ Produto</button>
+                    const status = p.ativo ? 'bg-green-500' : 'bg-red-500';
+                    html += `<div onclick='openProductModal(${JSON.stringify(p)})' class="flex items-center gap-3 p-3 hover:bg-orange-50 cursor-pointer border-b last:border-0">
+                        <img src="${p.imagem_url || 'https://placehold.co/100'}" class="w-10 h-10 rounded object-cover bg-gray-200">
+                        <div class="flex-1">
+                            <p class="text-sm font-bold">${p.nome}</p>
+                            <p class="text-xs text-gray-500"><span class="w-2 h-2 rounded-full ${status} inline-block"></span> R$ ${p.preco}</p>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">${prodHtml}</div>
+                        <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
                     </div>`;
+                });
+                html += `</div>`;
                 list.insertAdjacentHTML('beforeend', html);
             });
         }
 
-        // --- FUNÇÕES DE CADASTRO ---
-        async function addCategory() {
-            if(CURRENT_CATEGORIES.length >= 6) return alert("Limite de 6 categorias.");
-            const name = document.getElementById('new-cat-name').value;
-            if(!name) return;
-            const { error } = await sbClient.from('categorias').insert([{ estabelecimento_id: CURRENT_STORE.id, nome: name, ordem: CURRENT_CATEGORIES.length + 1 }]);
-            if(error) alert(error.message);
-            else { closeModal('modal-cat'); document.getElementById('new-cat-name').value = ''; loadMenu(); }
+        // SALVAR CONFIGURAÇÕES (AGORA COM LOGO)
+        async function saveSettings() {
+            const btn = document.getElementById('btn-save-cfg');
+            btn.innerText = "Salvando..."; btn.disabled = true;
+
+            try {
+                const updates = {
+                    nome_fantasia: document.getElementById('cfg-name').value,
+                    telefone_whatsapp: document.getElementById('cfg-phone').value,
+                    horario_abertura: document.getElementById('cfg-open').value,
+                    horario_fechamento: document.getElementById('cfg-close').value,
+                    cor_primaria: document.getElementById('cfg-color').value,
+                    valor_entrega: document.getElementById('cfg-fee').value,
+                    chave_pix: document.getElementById('cfg-pix').value
+                };
+
+                // Upload Logo se houver
+                const fileInput = document.getElementById('cfg-logo-input');
+                if(fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    const fileName = `logo_${CURRENT_STORE.id}_${Date.now()}`;
+                    const { error: upErr } = await sbClient.storage.from('lojas').upload(fileName, file);
+                    if(upErr) throw upErr;
+                    const { data } = sbClient.storage.from('lojas').getPublicUrl(fileName);
+                    updates.logo_url = data.publicUrl;
+                }
+
+                const { error } = await sbClient.from('estabelecimentos').update(updates).eq('id', CURRENT_STORE.id);
+                if(error) throw error;
+                
+                Toastify({ text: "Configurações Salvas!", style: { background: "#16A34A" } }).showToast();
+                loadStoreData(CURRENT_STORE.dono_id); // Recarrega para ver a logo nova
+
+            } catch(e) { alert("Erro: " + e.message); }
+            finally { btn.innerText = "Salvar Configurações"; btn.disabled = false; }
         }
 
-        function openProductModal(product = null, catId = null) {
+        // CATEGORIAS & PRODUTOS
+        async function addCategory() {
+            if(CURRENT_CATEGORIES.length >= 6) return alert("Limite de categorias atingido.");
+            const nome = document.getElementById('new-cat-name').value;
+            await sbClient.from('categorias').insert([{ estabelecimento_id: CURRENT_STORE.id, nome, ordem: CURRENT_CATEGORIES.length + 1 }]);
+            closeModal('modal-cat'); loadMenu(); document.getElementById('new-cat-name').value='';
+        }
+
+        async function saveProduct() {
+            const btn = document.getElementById('btn-save-prod'); btn.innerText="..."; btn.disabled=true;
+            try {
+                const id = document.getElementById('prod-id').value;
+                const catId = document.getElementById('prod-cat-id').value;
+                const payload = {
+                    nome: document.getElementById('prod-name').value,
+                    preco: document.getElementById('prod-price').value,
+                    descricao: document.getElementById('prod-desc').value,
+                    ativo: document.getElementById('prod-active').checked,
+                    estabelecimento_id: CURRENT_STORE.id,
+                    categoria_id: catId
+                };
+                
+                const fileInput = document.getElementById('prod-img');
+                if(fileInput.files.length > 0) {
+                    const fileName = `${CURRENT_STORE.id}/${Date.now()}`;
+                    await sbClient.storage.from('lojas').upload(fileName, fileInput.files[0]);
+                    const { data } = sbClient.storage.from('lojas').getPublicUrl(fileName);
+                    payload.imagem_url = data.publicUrl;
+                }
+
+                if(id) await sbClient.from('produtos').update(payload).eq('id', id);
+                else await sbClient.from('produtos').insert([payload]);
+                
+                closeModal('modal-prod'); loadMenu();
+            } catch(e) { alert(e.message); } finally { btn.innerText="Salvar"; btn.disabled=false; }
+        }
+
+        async function deleteProduct() {
+            if(!confirm("Excluir?")) return;
+            await sbClient.from('produtos').delete().eq('id', document.getElementById('prod-id').value);
+            closeModal('modal-prod'); loadMenu();
+        }
+
+        // UTILS
+        function switchTab(tab) {
+            ['menu','config'].forEach(t => document.getElementById(`content-${t}`).classList.add('hidden'));
+            document.getElementById(`content-${tab}`).classList.remove('hidden');
+            // Estilização simples das abas
+            document.getElementById('tab-menu').className = tab==='menu' ? "pb-3 border-b-2 border-orange-600 font-bold text-orange-600 text-sm" : "pb-3 text-gray-500 text-sm";
+            document.getElementById('tab-config').className = tab==='config' ? "pb-3 border-b-2 border-orange-600 font-bold text-orange-600 text-sm" : "pb-3 text-gray-500 text-sm";
+        }
+        function openProductModal(p, catId) {
             document.getElementById('modal-prod').classList.remove('hidden');
-            if (product) {
-                document.getElementById('prod-id').value = product.id;
-                document.getElementById('prod-cat-id').value = product.categoria_id;
-                document.getElementById('prod-name').value = product.nome;
-                document.getElementById('prod-desc').value = product.descricao || '';
-                document.getElementById('prod-price').value = product.preco;
-                document.getElementById('prod-active').checked = product.ativo;
-                if(product.imagem_url) { document.getElementById('preview-img').src = product.imagem_url; document.getElementById('preview-img').classList.remove('hidden'); document.getElementById('upload-placeholder').classList.add('hidden'); }
-                else { resetImagePreview(); }
+            if(p) {
+                document.getElementById('prod-id').value = p.id;
+                document.getElementById('prod-cat-id').value = p.categoria_id;
+                document.getElementById('prod-name').value = p.nome;
+                document.getElementById('prod-desc').value = p.descricao||'';
+                document.getElementById('prod-price').value = p.preco;
+                document.getElementById('prod-active').checked = p.ativo;
+                document.getElementById('preview-img').src = p.imagem_url || '';
+                if(p.imagem_url) document.getElementById('preview-img').classList.remove('hidden');
                 document.getElementById('btn-delete-prod').classList.remove('hidden');
             } else {
                 document.getElementById('prod-id').value = '';
                 document.getElementById('prod-cat-id').value = catId;
                 document.getElementById('prod-name').value = '';
-                document.getElementById('prod-desc').value = '';
                 document.getElementById('prod-price').value = '';
                 document.getElementById('prod-active').checked = true;
-                resetImagePreview();
+                document.getElementById('preview-img').classList.add('hidden');
                 document.getElementById('btn-delete-prod').classList.add('hidden');
             }
-        }
-
-        async function saveProduct() {
-            const btn = document.getElementById('btn-save-prod');
-            btn.innerText = "Salvando..."; btn.disabled = true;
-            try {
-                const id = document.getElementById('prod-id').value;
-                const catId = document.getElementById('prod-cat-id').value;
-                const name = document.getElementById('prod-name').value;
-                const price = document.getElementById('prod-price').value;
-                const active = document.getElementById('prod-active').checked;
-                const desc = document.getElementById('prod-desc').value;
-                const fileInput = document.getElementById('prod-img');
-                if(!name || !price) throw new Error("Nome e Preço obrigatórios.");
-
-                let imageUrl = null;
-                if(fileInput.files.length > 0) {
-                    const file = fileInput.files[0];
-                    const fileExt = file.name.split('.').pop();
-                    const fileName = `${CURRENT_STORE.id}/${Date.now()}.${fileExt}`;
-                    const { error } = await sbClient.storage.from('lojas').upload(fileName, file);
-                    if(error) throw error;
-                    const { data } = sbClient.storage.from('lojas').getPublicUrl(fileName);
-                    imageUrl = data.publicUrl;
-                }
-
-                const payload = { nome: name, preco: price, descricao: desc, ativo: active, estabelecimento_id: CURRENT_STORE.id, categoria_id: catId };
-                if(imageUrl) payload.imagem_url = imageUrl;
-
-                if(id) await sbClient.from('produtos').update(payload).eq('id', id);
-                else await sbClient.from('produtos').insert([payload]);
-
-                closeModal('modal-prod'); loadMenu(); Toastify({ text: "Salvo!", style: { background: "#16A34A" } }).showToast();
-            } catch (e) { alert("Erro: " + e.message); } 
-            finally { btn.innerText = "Salvar"; btn.disabled = false; }
-        }
-
-        async function deleteProduct() {
-            if(!confirm("Excluir?")) return;
-            const id = document.getElementById('prod-id').value;
-            await sbClient.from('produtos').delete().eq('id', id);
-            closeModal('modal-prod'); loadMenu();
-        }
-
-        async function saveSettings() {
-            const updates = {
-                nome_fantasia: document.getElementById('cfg-name').value,
-                telefone_whatsapp: document.getElementById('cfg-phone').value,
-                horario_abertura: document.getElementById('cfg-open').value,
-                horario_fechamento: document.getElementById('cfg-close').value,
-                cor_primaria: document.getElementById('cfg-color').value
-            };
-            const { error } = await sbClient.from('estabelecimentos').update(updates).eq('id', CURRENT_STORE.id);
-            if(error) alert("Erro ao salvar"); else Toastify({ text: "Configurações salvas!", style: { background: "#16A34A" } }).showToast();
-        }
-
-        function switchTab(tab) {
-            document.getElementById('content-menu').classList.add('hidden');
-            document.getElementById('content-config').classList.add('hidden');
-            document.getElementById(`content-${tab}`).classList.remove('hidden');
         }
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
         function handleImagePreview(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(e) { document.getElementById('preview-img').src = e.target.result; document.getElementById('preview-img').classList.remove('hidden'); document.getElementById('upload-placeholder').classList.add('hidden'); }
+                reader.onload = (e) => {
+                    // Se for logo
+                    if(input.id === 'cfg-logo-input') {
+                        document.getElementById('cfg-logo-preview').src = e.target.result;
+                        document.getElementById('cfg-logo-preview').classList.remove('hidden');
+                        document.getElementById('cfg-logo-icon').classList.add('hidden');
+                    } else { // Se for produto
+                        document.getElementById('preview-img').src = e.target.result;
+                        document.getElementById('preview-img').classList.remove('hidden');
+                    }
+                };
                 reader.readAsDataURL(input.files[0]);
             }
         }
-        function resetImagePreview() { document.getElementById('preview-img').src = ''; document.getElementById('preview-img').classList.add('hidden'); document.getElementById('upload-placeholder').classList.remove('hidden'); document.getElementById('prod-img').value = ''; }
-        
+
         checkSession();
     </script>
 </body>
