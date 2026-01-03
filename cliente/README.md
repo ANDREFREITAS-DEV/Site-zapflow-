@@ -59,3 +59,22 @@ create table public.produtos (
   imagem_url text,
   ativo boolean default true
 );
+
+Lembre-se de ativar o RLS (Row Level Security) e criar o Bucket lojas no Storage com permissão pública.
+
+2. Configuração do Projeto
+Clone este repositório.
+
+No arquivo admin.html e index.html, substitua as variáveis SUPABASE_URL e SUPABASE_KEY pelas suas chaves de API.
+
+Para criar uma nova loja, acesse /admin.html e faça login com seu usuário Supabase.
+
+📂 Estrutura de Pastas
+/admin.html: Painel único de controle para todos os lojistas.
+
+/index.html: Modelo base do cardápio (deve ser copiado para a pasta do cliente).
+
+/cliente/NOME-DA-LOJA/: Pasta contendo o index.html específico daquele cliente (onde se define o const LOJA_SLUG).
+
+📞 Suporte
+Desenvolvido por André Freitas. Para dúvidas ou customizações, entre em contato.
