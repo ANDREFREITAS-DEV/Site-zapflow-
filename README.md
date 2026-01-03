@@ -7,49 +7,43 @@ Este repositório contém o site institucional da ZapFlow (SaaS de Delivery) e a
 - **Instagram:** [@usezapflow](https://instagram.com/usezapflow)
 - **Contato:** comercial@usezapflow.com.br
 
+# ⚡ ZapFlow - Sistema de Delivery Leve
 
-# ZapFlow - Delivery via WhatsApp
+Sistema de Cardápio Digital e Gestão de Pedidos focado em performance.
+Desenvolvido para rodar direto no navegador, sem backend pesado, utilizando Supabase como banco de dados.
 
-Sistema de Cardápio Digital e Gestão de Pedidos focado em velocidade e simplicidade.
-Desenvolvido com tecnologia web padrão (HTML5, TailwindCSS, JS Vanilla) e Supabase (BaaS).
+## 🚀 Diferenciais Técnicos
+- **Arquitetura Static-First:** O site é puramente HTML/JS, garantindo carregamento instantâneo.
+- **Impressão Térmica Nativa:** Gera cupons fiscais (58mm/80mm) via CSS `@media print`, compatível com impressoras USB e Bluetooth (via RawBT).
+- **Multi-Tenant por Pastas:** Cada cliente tem sua própria pasta e slug (ex: `/cliente/pizzaria-x`), facilitando a gestão de URLs.
 
-## 🚀 Tecnologias
-- **Frontend:** HTML5, JavaScript (ES6+), TailwindCSS (CDN).
-- **Backend/Banco:** Supabase (PostgreSQL).
-- **Hospedagem:** Vercel (Arquivos Estáticos).
-- **Bibliotecas:** Toastify (Notificações), FontAwesome (Ícones).
-
-## 📂 Estrutura de Pastas
-O projeto utiliza uma arquitetura multi-tenant baseada em pastas:
-
+## 📂 Estrutura do Projeto
 / (Raiz)
-├── admin.html           # Painel Administrativo (Gestão de Pedidos/Cardápio)
-├── cliente/             # Pasta que contém as lojas dos clientes
-│   └── gas-fiel/        # Exemplo de Cliente (Slug: gas-fiel)
-│       ├── index.html   # Cardápio do Cliente
+├── index.html           # Landing Page (Venda do Serviço)
+├── admin.html           # Painel do Dono (Pedidos, Cardápio, Impressão)
+├── cliente/             # Diretório de Lojas
+│   └── gas-fiel/        # [TEMPLATE] Pasta da Loja
+│       ├── index.html   # Cardápio (Frente de Loja)
 │       └── pedido/      
-│           └── index.html # Tela de Acompanhamento do Pedido (Recibo)
+│           └── index.html # Tela de Acompanhamento (Recibo/Status)
 └── README.md            # Documentação
 
-## ⚙️ Configuração
-Para criar um novo cliente:
-1. Duplique a pasta `cliente/gas-fiel`.
-2. Renomeie para o slug do novo cliente (ex: `pizzaria-top`).
-3. No `index.html` da nova pasta, altere a constante `LOJA_SLUG` no topo do script.
+## ⚙️ Como Criar uma Nova Loja
+1. Copie a pasta `cliente/gas-fiel`.
+2. Renomeie para o nome do novo cliente (ex: `hamburgueria-top`).
+3. Edite o `index.html` da nova pasta e altere a const `LOJA_SLUG` para o slug da loja criado no banco de dados.
 
-## 🛠️ Funcionalidades
-- **Cardápio:** Listagem dinâmica por categorias.
-- **Carrinho:** Controle de quantidade e subtotal em tempo real.
-- **Checkout:** Envio do pedido formatado para o WhatsApp da loja.
-- **Admin:**
-  - Recebimento de pedidos em tempo real (Polling).
-  - Impressão térmica (Cupom 58mm/80mm).
-  - Gestão de status (Pendente -> Preparando -> Entrega -> Concluído).
-  - Gestão de Produtos e Categorias.
-  - Upload de imagens com trava de 2MB.
-  - Histórico de pedidos com filtro por data.
+## 🛠️ Stack Tecnológica
+- **Front:** HTML5, TailwindCSS (CDN), Vanilla JS.
+- **BaaS:** Supabase (PostgreSQL, Auth, Storage, Realtime).
+- **Hospedagem:** Vercel (Recomendado) ou qualquer servidor estático.
 
-## 📦 Banco de Dados (Supabase)
-O sistema depende das tabelas: `estabelecimentos`, `categorias`, `produtos`, `pedidos`.
-(Ver documentação SQL para schema completo).
-
+## ✅ Checklist de Funcionalidades
+- [x] Cardápio Digital com carrinho e variações.
+- [x] Envio de Pedido via WhatsApp (Formatado).
+- [x] Painel Administrativo com atualização em tempo real (Polling).
+- [x] Gestão de Status (Pendente -> Entregue).
+- [x] Impressão de Comanda (Cozinha/Balcão).
+- [x] Histórico de Pedidos com Filtro de Data.
+- [x] Trava de segurança para upload de imagens (>2MB).
+   
